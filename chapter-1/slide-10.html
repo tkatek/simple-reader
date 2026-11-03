@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
+                    }
+                }
+            }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+
+            document.documentElement.classList.toggle('dark', useDark);
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        .vocab-card { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease; }
+        .vocab-card:hover { transform: translateY(-4px); }
+    </style>
+</head>
+<body class="h-full overflow-x-hidden">
+<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
+    <div class="pointer-events-none fixed inset-0 z-0">
+        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
+        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
+        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
+    </div>
+
+    <div class="relative z-10">
+        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
+            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1150px] flex-col items-center justify-center gap-10 px-6 py-10 lg:px-12">
+                <!-- Header -->
+                <div class="header-section text-center opacity-0">
+                    <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
+                        SLIDE 10 — WORDS TO REMEMBER
+                    </span>
+                    <h1 class="mt-6 text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">New <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">Vocabulary:</span></h1>
+                </div>
+
+                <!-- Vocabulary cards (each word gets an image slot) -->
+                <div class="vocab-grid grid w-full grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5">
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-saving-account.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">Saving account/ current account</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-deposit.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">deposi</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-withdraw.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">withdraw</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-bank-statement.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">bank statement</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-balance.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">balance</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-sign.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">sign</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-transfer.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">transfer</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-overdraw.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">overdraw</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-bank-statement-2.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">bank statement</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-bank-branch.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">bank branch</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-transactions.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">transactions</p>
+                    </div>
+
+                    <div class="vocab-card group overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white opacity-0 shadow-[0_20px_45px_-22px_rgba(15,23,42,0.2)] hover:shadow-[0_28px_55px_-22px_rgba(79,70,229,0.4)] dark:border-slate-800 dark:bg-slate-800">
+                        <!-- IMAGE SLOT: <img src="img/vocab-atm.png" ...> -->
+                        <div class="img-slot flex h-20 items-center justify-center border-b border-dashed border-indigo-200 bg-indigo-50/40 text-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-500/60">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/></svg>
+                        </div>
+                        <p class="px-4 py-3.5 text-center text-sm font-black uppercase tracking-tight text-slate-800 dark:text-slate-100">ATM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        function playIn() {
+            const els = ['.header-section', '.vocab-card'];
+            if (!window.gsap) {
+                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
+                return;
+            }
+            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+            tl.to('.header-section', { opacity: 1, duration: 0.7 })
+                .to('.vocab-card', { opacity: 1, y: -14, duration: 0.5, stagger: 0.06, clearProps: 'transform' }, '-=0.3');
+
+            window.resetSlide = () => {
+                tl.pause(0);
+                gsap.set(els.join(','), { clearProps: 'all' });
+                tl.restart();
+            };
+        }
+
+        playIn();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'],
+                        script: ['Pacifico', 'cursive']
+                    }
+                }
+            }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+
+            document.documentElement.classList.toggle('dark', useDark);
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body class="h-full overflow-x-hidden">
+<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-[#1e1b4b] text-slate-50">
+    <div class="pointer-events-none fixed inset-0 z-0">
+        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/25 blur-3xl"></div>
+        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl"></div>
+        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl"></div>
+    </div>
+
+    <div class="relative z-10">
+        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
+            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1100px] flex-col items-center justify-center gap-10 px-6 py-12 lg:px-16">
+                <!-- Thank You calligraphy -->
+                <p class="thank-you font-script text-5xl text-indigo-300/90 drop-shadow-[0_0_30px_rgba(129,140,248,0.35)] opacity-0 sm:text-6xl">Thank You</p>
+
+                <!-- Header -->
+                <div class="header-section text-center opacity-0">
+                    <span class="inline-flex items-center rounded-full border border-indigo-400/30 bg-indigo-500/15 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-300">
+                        SLIDE 13 — LESSON REVIEW
+                    </span>
+                    <h1 class="mt-6 text-4xl font-black tracking-tight sm:text-5xl md:text-6xl">Wrap <span class="bg-gradient-to-br from-indigo-400 to-blue-300 bg-clip-text text-transparent">up!</span></h1>
+                </div>
+
+                <!-- Wrap-up questions -->
+                <div class="flex w-full max-w-[860px] flex-col gap-5">
+                    <div class="wrap-card group flex items-center gap-5 self-start rounded-[1.75rem] border border-white/10 bg-white/5 p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur transition-all hover:translate-x-2 hover:border-indigo-400/40 sm:self-start sm:p-7 md:ml-8">
+                        <span class="flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-lg font-black text-white shadow-lg shadow-indigo-500/40">1</span>
+                        <p class="text-lg font-bold leading-snug tracking-tight sm:text-xl">What can you say when you want to pay your bill?</p>
+                    </div>
+
+                    <div class="wrap-card group flex items-center gap-5 self-center rounded-[1.75rem] border border-white/10 bg-white/5 p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur transition-all hover:-translate-y-1 hover:border-indigo-400/40 sm:p-7 md:mx-14">
+                        <span class="flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-lg font-black text-white shadow-lg shadow-emerald-500/40">2</span>
+                        <p class="text-lg font-bold leading-snug tracking-tight sm:text-xl">How can you say you want to open a bank account?</p>
+                    </div>
+
+                    <div class="wrap-card group flex items-center gap-5 self-end rounded-[1.75rem] border border-white/10 bg-white/5 p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur transition-all hover:-translate-x-2 hover:border-indigo-400/40 sm:self-end sm:p-7 md:mr-8">
+                        <span class="flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-lg font-black text-white shadow-lg shadow-amber-500/40">3</span>
+                        <p class="text-lg font-bold leading-snug tracking-tight sm:text-xl">What does “Cut your coat according to your cloth” mean?</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6 opacity-0" id="end-line">
+                    <div class="h-px w-16 bg-indigo-400/40"></div>
+                    <span class="text-xs font-black uppercase tracking-widest text-indigo-300/80">End of Lesson 3 — Paying Bills</span>
+                    <div class="h-px w-16 bg-indigo-400/40"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        function playIn() {
+            const els = ['.thank-you', '.header-section', '.wrap-card', '#end-line'];
+            if (!window.gsap) {
+                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
+                return;
+            }
+            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+            tl.to('.thank-you', { opacity: 1, duration: 0.9, ease: 'power2.out' })
+                .to('.header-section', { opacity: 1, y: -10, duration: 0.6 }, '-=0.5')
+                .to('.wrap-card', { opacity: 1, y: -14, duration: 0.65, stagger: 0.22, clearProps: 'transform' }, '-=0.25')
+                .to('#end-line', { opacity: 1, duration: 0.6 }, '-=0.2');
+
+            window.resetSlide = () => {
+                tl.pause(0);
+                gsap.set(els.join(','), { clearProps: 'all' });
+                tl.restart();
+            };
+        }
+
+        playIn();
+    });
+</script>
+</body>
+</html>

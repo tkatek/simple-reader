@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
+                    }
+                }
+            }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+
+            document.documentElement.classList.toggle('dark', useDark);
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        .word-pill {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .word-pill:not(.is-used):hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(79, 70, 229, 0.5);
+        }
+        .word-pill.is-selected {
+            border-color: #4f46e5;
+            background-color: #4f46e5;
+            color: #fff;
+            box-shadow: 0 12px 22px -8px rgba(79, 70, 229, 0.7);
+        }
+        .word-pill.is-used {
+            opacity: 0.35;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+        .blank-slot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 110px;
+            margin: 0 4px;
+            padding: 2px 12px;
+            border-bottom: 3px solid #a5b4fc;
+            border-radius: 8px 8px 0 0;
+            font-weight: 800;
+            font-style: italic;
+            color: #4f46e5;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            vertical-align: baseline;
+        }
+        .blank-slot:hover { background-color: rgba(79, 70, 229, 0.08); }
+        .blank-slot.is-filled { border-bottom-color: #4f46e5; background-color: rgba(79, 70, 229, 0.08); }
+        .blank-slot.is-correct { border-bottom-color: #10b981; color: #059669; background-color: rgba(16, 185, 129, 0.1); }
+        .blank-slot.is-wrong { border-bottom-color: #f43f5e; color: #e11d48; background-color: rgba(244, 63, 94, 0.08); }
+        .blank-num { font-size: 0.7em; font-weight: 900; opacity: 0.6; margin-right: 6px; }
+        #answers-card { display: none; }
+        #answers-card.is-open { display: flex; }
+    </style>
+</head>
+<body class="h-full overflow-x-hidden">
+<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
+    <div class="pointer-events-none fixed inset-0 z-0">
+        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
+        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
+        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
+    </div>
+
+    <div class="relative z-10">
+        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
+            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1050px] flex-col items-center justify-center gap-8 px-6 py-10 lg:px-12">
+                <!-- Header -->
+                <div class="header-section flex w-full flex-col items-center gap-4 text-center opacity-0 sm:flex-row sm:items-end sm:justify-between sm:text-left">
+                    <div>
+                        <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
+                            SLIDE 12 — CONSOLIDATION
+                        </span>
+                        <h1 class="mt-5 text-3xl font-black tracking-tight sm:text-4xl">Fill-in with the <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">right word:</span></h1>
+                    </div>
+                    <button id="toggle-answers-btn" class="flex shrink-0 items-center gap-2 rounded-2xl border-2 border-indigo-100 bg-white px-5 py-3 text-xs font-extrabold uppercase tracking-[0.1em] text-indigo-600 transition-all hover:-translate-y-0.5 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-slate-800 dark:text-indigo-400 dark:hover:border-indigo-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span id="toggle-answers-label">Answer key</span>
+                    </button>
+                </div>
+
+                <!-- Word bank -->
+                <div class="wordbank-card w-full rounded-[1.75rem] border border-indigo-100 bg-white p-5 opacity-0 shadow-[0_20px_50px_-25px_rgba(79,70,229,0.3)] sm:p-6 dark:border-indigo-500/30 dark:bg-slate-800">
+                    <p class="mb-3 text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400">Word bank — tap a word, then tap a blank</p>
+                    <div class="flex flex-wrap gap-2.5" id="word-bank">
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">active</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">computer system</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">cash</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">form</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">account</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">email</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">signiture</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">deposit</button>
+                        <button class="word-pill rounded-full border-2 border-indigo-100 bg-indigo-50/60 px-4 py-2 text-sm font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">ID card</button>
+                    </div>
+                </div>
+
+                <!-- Story card -->
+                <div class="story-card w-full rounded-[2rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.2)] sm:p-9 dark:border-slate-800 dark:bg-slate-800">
+                    <p class="text-base font-medium leading-[2.4] text-slate-700 sm:text-lg dark:text-slate-200">
+                        The customer went to the bank to open a new
+                        <button class="blank-slot" data-answer="account"><span class="blank-num">(1)</span><span class="blank-text">________</span></button>.
+                        The worker asked for his
+                        <button class="blank-slot" data-answer="ID card"><span class="blank-num">(2)</span><span class="blank-text">________</span></button>
+                        to check who he was. He filled out a
+                        <button class="blank-slot" data-answer="form"><span class="blank-num">(3)</span><span class="blank-text">________</span></button>
+                        and gave a
+                        <button class="blank-slot" data-answer="signiture"><span class="blank-num">(4)</span><span class="blank-text">________</span></button>.
+                        Then the worker asked how much he wanted to
+                        <button class="blank-slot" data-answer="deposit"><span class="blank-num">(5)</span><span class="blank-text">________</span></button>.
+                        He gave $500 in
+                        <button class="blank-slot" data-answer="cash"><span class="blank-num">(6)</span><span class="blank-text">________</span></button>.
+                        The worker put everything into the
+                        <button class="blank-slot" data-answer="computer system"><span class="blank-num">(7)</span><span class="blank-text">________</span></button>.
+                        He said the account would be
+                        <button class="blank-slot" data-answer="active"><span class="blank-num">(8)</span><span class="blank-text">________</span></button>
+                        soon. He also said the customer would get an
+                        <button class="blank-slot" data-answer="email"><span class="blank-num">(9)</span><span class="blank-text">________</span></button>
+                        soon.
+                    </p>
+                </div>
+
+                <!-- Answer key card -->
+                <div id="answers-card" class="w-full flex-col gap-4 rounded-[1.75rem] border border-emerald-100 bg-emerald-50/70 p-6 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+                    <p class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-emerald-600 dark:text-emerald-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                        Answers
+                    </p>
+                    <div class="grid grid-cols-1 gap-x-8 gap-y-1.5 text-sm font-bold text-emerald-800 dark:text-emerald-200 sm:grid-cols-3">
+                        <p>(1) new account</p>
+                        <p>(2) ID card</p>
+                        <p>(3) form</p>
+                        <p>(4) signature</p>
+                        <p>(5) deposit</p>
+                        <p>(6) cash</p>
+                        <p>(7) computer system</p>
+                        <p>(8) active</p>
+                        <p>(9) email</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const bank = document.getElementById('word-bank');
+        const pills = Array.from(bank.querySelectorAll('.word-pill'));
+        const blanks = Array.from(document.querySelectorAll('.blank-slot'));
+        let selectedWord = null;
+
+        function refreshUsed() {
+            const filled = new Set(blanks.map(b => b.dataset.filled).filter(Boolean));
+            pills.forEach(p => {
+                p.classList.toggle('is-used', filled.has(p.textContent.trim()));
+                if (p.classList.contains('is-selected') && p.classList.contains('is-used')) {
+                    p.classList.remove('is-selected');
+                    selectedWord = null;
+                }
+            });
+        }
+
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                const wasSelected = pill.classList.contains('is-selected');
+                pills.forEach(p => p.classList.remove('is-selected'));
+                selectedWord = wasSelected ? null : pill.textContent.trim();
+                if (selectedWord) pill.classList.add('is-selected');
+            });
+        });
+
+        blanks.forEach(blank => {
+            blank.addEventListener('click', () => {
+                if (selectedWord) {
+                    blank.dataset.filled = selectedWord;
+                    blank.querySelector('.blank-text').textContent = selectedWord;
+                    blank.classList.add('is-filled');
+                    blank.classList.remove('is-correct', 'is-wrong');
+                    selectedWord = null;
+                } else if (blank.dataset.filled) {
+                    delete blank.dataset.filled;
+                    blank.querySelector('.blank-text').textContent = '________';
+                    blank.classList.remove('is-filled', 'is-correct', 'is-wrong');
+                }
+                refreshUsed();
+            });
+        });
+
+        // Answer key toggle + auto-fill check
+        const answersCard = document.getElementById('answers-card');
+        const toggleBtn = document.getElementById('toggle-answers-btn');
+        const toggleLabel = document.getElementById('toggle-answers-label');
+        toggleBtn.addEventListener('click', () => {
+            const open = answersCard.classList.toggle('is-open');
+            toggleLabel.textContent = open ? 'Hide answers' : 'Answer key';
+            if (open) {
+                blanks.forEach(b => {
+                    b.classList.remove('is-correct', 'is-wrong');
+                    if (b.dataset.filled) {
+                        b.classList.add(b.dataset.filled.trim().toLowerCase() === b.dataset.answer.trim().toLowerCase() ? 'is-correct' : 'is-wrong');
+                    }
+                });
+            }
+        });
+
+        function resetExercise() {
+            selectedWord = null;
+            pills.forEach(p => p.classList.remove('is-selected', 'is-used'));
+            blanks.forEach(b => {
+                delete b.dataset.filled;
+                b.querySelector('.blank-text').textContent = '________';
+                b.classList.remove('is-filled', 'is-correct', 'is-wrong');
+            });
+            answersCard.classList.remove('is-open');
+            toggleLabel.textContent = 'Answer key';
+        }
+
+        function playIn() {
+            const els = ['.header-section', '.wordbank-card', '.story-card'];
+            if (!window.gsap) {
+                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
+                return;
+            }
+            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+            tl.to('.header-section', { opacity: 1, duration: 0.7 })
+                .to('.wordbank-card', { opacity: 1, y: -12, duration: 0.7, clearProps: 'transform' }, '-=0.3')
+                .to('.story-card', { opacity: 1, y: -12, duration: 0.7, clearProps: 'transform' }, '-=0.45');
+
+            window.resetSlide = () => {
+                tl.pause(0);
+                gsap.set(els.join(','), { clearProps: 'all' });
+                tl.restart();
+                resetExercise();
+            };
+        }
+
+        playIn();
+    });
+</script>
+</body>
+</html>
