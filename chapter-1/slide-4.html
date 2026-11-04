@@ -11,13 +11,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
-                    }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
         };
 
         (function applyInitialTheme() {
@@ -27,13 +21,11 @@
                     useDark = window.parent.document.documentElement.classList.contains('dark');
                 }
             } catch (e) {}
-
             if (!useDark) {
                 const saved = localStorage.getItem('theme-preference');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
-
             document.documentElement.classList.toggle('dark', useDark);
         })();
 
@@ -42,89 +34,78 @@
             document.documentElement.classList.toggle('dark', useDark);
             localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
         };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
     </script>
+    <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
-<body class="h-full overflow-x-hidden">
-<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
-        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
-    </div>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
 
-    <div class="relative z-10">
-        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
-            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1200px] flex-col items-center justify-center gap-10 px-6 py-10 lg:px-16">
-                <!-- Header -->
-                <div class="header-section text-center opacity-0">
-                    <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        SLIDE 04 — LET'S TALK
-                    </span>
-                    <h1 class="mt-6 text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">Warm-up <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">Questions</span></h1>
-                </div>
+    <div class="bec-stage" style="gap: clamp(0.7rem, 2vh, 1.3rem)">
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 04 · Let's Talk</span>
+            <h1 class="bec-title">Warm-up <span class="accent">Questions</span></h1>
+            <p class="bec-sub">Talk about these questions with your teacher.</p>
+        </div>
 
-                <div class="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-                    <!-- Questions -->
-                    <div class="flex flex-col gap-5">
-                        <div class="question-card group flex items-center gap-5 rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.2)] transition-all hover:-translate-y-1 hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-800 dark:hover:border-indigo-500/40">
-                            <span class="flex h-11 w-11 min-w-11 items-center justify-center rounded-2xl bg-indigo-50 text-lg font-black text-indigo-600 transition-transform group-hover:scale-110 dark:bg-indigo-500/15 dark:text-indigo-400">1</span>
-                            <p class="text-lg font-bold leading-snug tracking-tight sm:text-xl">What kind of bills can you see?</p>
-                        </div>
+        <!-- Discussion prompts: one at a time, teacher-led (no scoring) -->
+        <div class="bec-card bec-quiz reveal" style="width:min(640px,100%)">
+            <div class="bec-quiz-top">
+                <p class="bec-quiz-instruction">Discuss together:</p>
+                <span class="bec-qcount" id="q-count">1 of 3</span>
+            </div>
 
-                        <div class="question-card group flex items-center gap-5 rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.2)] transition-all hover:-translate-y-1 hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-800 dark:hover:border-indigo-500/40">
-                            <span class="flex h-11 w-11 min-w-11 items-center justify-center rounded-2xl bg-indigo-50 text-lg font-black text-indigo-600 transition-transform group-hover:scale-110 dark:bg-indigo-500/15 dark:text-indigo-400">2</span>
-                            <p class="text-lg font-bold leading-snug tracking-tight sm:text-xl">How often do you pay your bills?</p>
-                        </div>
+            <div class="bec-progress"><div class="bec-progress-fill" id="talk-progress"></div></div>
 
-                        <div class="question-card group flex items-center gap-5 rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.2)] transition-all hover:-translate-y-1 hover:border-indigo-200 dark:border-slate-800 dark:bg-slate-800 dark:hover:border-indigo-500/40">
-                            <span class="flex h-11 w-11 min-w-11 items-center justify-center rounded-2xl bg-indigo-50 text-lg font-black text-indigo-600 transition-transform group-hover:scale-110 dark:bg-indigo-500/15 dark:text-indigo-400">3</span>
-                            <p class="text-lg font-bold leading-snug tracking-tight sm:text-xl">Do you need to go the bank to pay your bills?</p>
-                        </div>
-                    </div>
+            <p class="bec-question" id="q-text">What kind of bills can you see?</p>
 
-                    <!-- Image slot: photo of different household bills on a table (tech lead will host the real asset) -->
-                    <div class="image-section relative flex items-center justify-center">
-                        <!-- IMAGE SLOT: replace inner block with <img src="img/slide-4-bills.png" class="h-full w-full object-cover" alt="..."> -->
-                        <div class="img-slot group relative flex aspect-[4/3] w-full max-w-[460px] flex-col items-center justify-center gap-4 rounded-[2.5rem] border-2 border-dashed border-indigo-200 bg-white/60 p-8 text-center shadow-[0_40px_80px_-40px_rgba(15,23,42,0.2)] backdrop-blur transition-colors dark:border-indigo-500/40 dark:bg-slate-800/60">
-                            <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-500 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400 dark:text-indigo-500">Image Placeholder</p>
-                                <p class="mt-2 text-xs font-bold leading-relaxed text-slate-500 dark:text-slate-400">Photo — household bills on a table</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="bec-quiznav" style="margin-top:0.35rem">
+                <button class="bec-btn bec-btn-outline" id="btn-prev">Previous Question</button>
+                <button class="bec-btn bec-btn-primary" id="btn-next">Next Question</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        function playIn() {
-            const els = ['.header-section', '.question-card', '.image-section'];
-            if (!window.gsap) {
-                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
-                return;
-            }
-            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-            tl.to('.header-section', { opacity: 1, duration: 0.7 })
-                .to('.question-card', { opacity: 1, x: -14, duration: 0.7, stagger: 0.18, clearProps: 'transform' }, '-=0.3')
-                .fromTo('.image-section', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.8, clearProps: 'transform' }, '-=0.7');
+    const QUESTIONS = [
+        "What kind of bills can you see?",
+        "How often do you pay your bills?",
+        "Do you need to go the bank to pay your bills?"
+    ];
 
-            window.resetSlide = () => {
-                tl.pause(0);
-                gsap.set(els.join(','), { clearProps: 'all' });
-                tl.restart();
-            };
+    document.addEventListener('DOMContentLoaded', () => {
+        const $ = (id) => document.getElementById(id);
+        let current = 0;
+        const visited = new Set([0]);
+
+        function render() {
+            $('q-text').textContent = QUESTIONS[current];
+            $('q-count').textContent = `${current + 1} of ${QUESTIONS.length}`;
+            $('talk-progress').style.width = `${(current + 1) / QUESTIONS.length * 100}%`;
+            $('btn-prev').disabled = current === 0;
+            $('btn-next').textContent = current === QUESTIONS.length - 1 ? 'Finish' : 'Next Question';
         }
 
-        playIn();
+        $('btn-next').addEventListener('click', () => { if (current < QUESTIONS.length - 1) { current++; visited.add(current); render(); } });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; render(); } });
+
+        window.resetSlide = function resetSlide() { current = 0; visited.clear(); visited.add(0); render(); };
+        render();
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.12, ease: 'power2.out', clearProps: 'all' });
+        }
     });
 </script>
 </body>

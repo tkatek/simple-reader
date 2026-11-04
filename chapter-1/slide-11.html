@@ -11,13 +11,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
-                    }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
         };
 
         (function applyInitialTheme() {
@@ -27,13 +21,11 @@
                     useDark = window.parent.document.documentElement.classList.contains('dark');
                 }
             } catch (e) {}
-
             if (!useDark) {
                 const saved = localStorage.getItem('theme-preference');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
-
             document.documentElement.classList.toggle('dark', useDark);
         })();
 
@@ -42,164 +34,177 @@
             document.documentElement.classList.toggle('dark', useDark);
             localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
         };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
     </script>
+    <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <style>
-        .choice-chip {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-        .choice-chip:not(.is-chosen):hover {
-            border-color: #6366f1;
-            background-color: rgba(99, 102, 241, 0.08);
-            transform: translateY(-1px);
-        }
-        .choice-chip.is-chosen {
-            border-color: #4f46e5;
-            background-color: #4f46e5;
-            color: #ffffff;
-            box-shadow: 0 10px 20px -8px rgba(79, 70, 229, 0.6);
-        }
-        .choice-chip.is-chosen .chip-slash { color: rgba(255, 255, 255, 0.7); }
-    </style>
 </head>
-<body class="h-full overflow-x-hidden">
-<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
-        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
-    </div>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
 
-    <div class="relative z-10">
-        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
-            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1100px] flex-col items-center justify-center gap-9 px-6 py-10 lg:px-12">
-                <!-- Header -->
-                <div class="header-section text-center opacity-0">
-                    <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        SLIDE 11 — VOCABULARY CHECK
-                    </span>
-                    <h1 class="mt-6 text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">Let’s do this <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">quiz:</span></h1>
-                </div>
+    <div class="bec-stage">
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 11 · Vocabulary Check</span>
+            <h1 class="bec-title">Let’s do this <span class="accent">quiz:</span></h1>
+        </div>
 
-                <div class="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-                    <!-- Questions -->
-                    <div class="flex flex-col gap-5">
-                        <div class="quiz-item rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800">
-                            <div class="mb-4 flex items-start gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">1</span>
-                                <p class="pt-0.5 text-sm font-black leading-snug sm:text-base">The amount of money you have in a bank is called</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5 pl-10">
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>balance</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>bank statement</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>bank transfer</button>
-                            </div>
-                        </div>
+        <div class="bec-statbar reveal">
+            <div class="bec-stat"><span class="bec-stat-label">Progress</span><span class="bec-stat-value" id="stat-progress">0/5</span></div>
+            <div class="bec-stat is-good"><span class="bec-stat-label">Correct</span><span class="bec-stat-value" id="stat-correct">0</span></div>
+            <div class="bec-stat is-bad"><span class="bec-stat-label">Mistakes</span><span class="bec-stat-value" id="stat-mistakes">0</span></div>
+        </div>
 
-                        <div class="quiz-item rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800">
-                            <div class="mb-4 flex items-start gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">2</span>
-                                <p class="pt-0.5 text-sm font-black leading-snug sm:text-base">When you move money from one bank to another is</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5 pl-10">
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>bank statement</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>withdraw</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>transfer</button>
-                            </div>
-                        </div>
+        <div class="bec-card bec-quiz reveal">
+            <div class="bec-quiz-top">
+                <p class="bec-quiz-instruction">Choose the correct answer:</p>
+                <span class="bec-qcount" id="q-count">1 of 5</span>
+            </div>
 
-                        <div class="quiz-item rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800">
-                            <div class="mb-4 flex items-start gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">3</span>
-                                <p class="pt-0.5 text-sm font-black leading-snug sm:text-base">To take out money from your bank account is</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5 pl-10">
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>deposit</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>transfer</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>overdraw</button>
-                            </div>
-                        </div>
+            <div class="bec-progress"><div class="bec-progress-fill" id="quiz-progress"></div></div>
 
-                        <div class="quiz-item rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800">
-                            <div class="mb-4 flex items-start gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">4</span>
-                                <p class="pt-0.5 text-sm font-black leading-snug sm:text-base">A document to show how much money you have is a</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5 pl-10">
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>bank transfer</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>bank statement</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>Withdraw</button>
-                            </div>
-                        </div>
+            <p class="bec-question" id="q-text">The amount of money you have in a bank is called</p>
 
-                        <div class="quiz-item rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800">
-                            <div class="mb-4 flex items-start gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">5</span>
-                                <p class="pt-0.5 text-sm font-black leading-snug sm:text-base">Money going in and out of a bank account is called</p>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5 pl-10">
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>deposit</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>withdraw</button>
-                                <button class="choice-chip rounded-full border-2 border-slate-100 px-5 py-2.5 text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="chip-slash pr-1.5 font-black text-slate-300 dark:text-slate-500">/</span>transaction</button>
-                            </div>
-                        </div>
-                    </div>
+            <div class="bec-answers" id="answers"></div>
 
-                    <!-- Image slot: banking vocabulary illustration panel (tech lead will host the real asset)
-                         Original picture: "Money going in and going out of a bank account" grid
-                         (a. cash machine/ATM, b. standing order, c. deposit, d. branch, e. cashback, f. transactions) -->
-                    <div class="image-section relative flex items-center justify-center">
-                        <div class="img-slot group relative flex aspect-[3/4] w-full max-w-[360px] flex-col items-center justify-center gap-4 rounded-[2.5rem] border-2 border-dashed border-indigo-200 bg-white/60 p-8 text-center shadow-[0_40px_80px_-40px_rgba(15,23,42,0.2)] backdrop-blur transition-colors dark:border-indigo-500/40 dark:bg-slate-800/60">
-                            <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-500 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400 dark:text-indigo-500">Image Placeholder</p>
-                                <p class="mt-2 text-xs font-bold leading-relaxed text-slate-500 dark:text-slate-400">Banking vocabulary picture grid — money in &amp; out of a bank account</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <p class="bec-feedback" id="feedback">&nbsp;</p>
+
+            <div class="bec-quiznav">
+                <button class="bec-btn bec-btn-outline" id="btn-restart">Restart Quiz</button>
+                <button class="bec-btn bec-btn-outline" id="btn-prev">Previous Question</button>
+                <button class="bec-btn bec-btn-primary" id="btn-next">Next Question</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    /* Question 3's intended answer is "withdraw", which the source slide omits
+       from its options — it is treated as a teacher-check item (never marked wrong). */
+    const QUESTIONS = [
+        { q: "The amount of money you have in a bank is called", opts: ["balance", "bank statement", "bank transfer"], answer: 0 },
+        { q: "When you move money from one bank to another is", opts: ["bank statement", "withdraw", "transfer"], answer: 2 },
+        { q: "To take out money from your bank account is", opts: ["deposit", "transfer", "overdraw"], answer: null },
+        { q: "A document to show how much money you have is a", opts: ["bank transfer", "bank statement", "Withdraw"], answer: 1 },
+        { q: "Money going in and out of a bank account is called", opts: ["deposit", "withdraw", "transaction"], answer: 2 }
+    ];
+
     document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.quiz-item').forEach(item => {
-            item.querySelectorAll('.choice-chip').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    const wasChosen = chip.classList.contains('is-chosen');
-                    item.querySelectorAll('.choice-chip').forEach(c => c.classList.remove('is-chosen'));
-                    if (!wasChosen) chip.classList.add('is-chosen');
-                });
+        const $ = (id) => document.getElementById(id);
+        const answersEl = $('answers'), qText = $('q-text'), qCount = $('q-count'), fb = $('feedback');
+        const statProgress = $('stat-progress'), statCorrect = $('stat-correct'), statMistakes = $('stat-mistakes');
+        const progressFill = $('quiz-progress');
+
+        let current = 0;
+        let results = Array(QUESTIONS.length).fill(null);
+        let selections = Array(QUESTIONS.length).fill(null);
+        let buttons = [];
+
+        function buildAnswers() {
+            answersEl.innerHTML = '';
+            buttons = [];
+            QUESTIONS[current].opts.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'bec-ans';
+                btn.textContent = opt;
+                btn.addEventListener('click', () => pick(opt));
+                answersEl.appendChild(btn);
+                buttons.push(btn);
             });
-        });
-
-        function playIn() {
-            const els = ['.header-section', '.quiz-item', '.image-section'];
-            if (!window.gsap) {
-                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
-                return;
-            }
-            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-            tl.to('.header-section', { opacity: 1, duration: 0.7 })
-                .to('.quiz-item', { opacity: 1, x: -12, duration: 0.55, stagger: 0.1, clearProps: 'transform' }, '-=0.3')
-                .fromTo('.image-section', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.8, clearProps: 'transform' }, '-=0.6');
-
-            window.resetSlide = () => {
-                tl.pause(0);
-                gsap.set(els.join(','), { clearProps: 'all' });
-                tl.restart();
-                document.querySelectorAll('.choice-chip').forEach(c => c.classList.remove('is-chosen'));
-            };
         }
 
-        playIn();
+        function pick(opt) {
+            if (results[current] !== null) return;
+            selections[current] = opt;
+            const ansIdx = QUESTIONS[current].answer;
+            if (ansIdx === null) {
+                results[current] = 'check';
+                renderAnswered();
+                fb.className = 'bec-feedback is-info';
+                fb.textContent = 'The best answer is “withdraw” — it is missing from the options. Check it with your teacher.';
+            } else {
+                results[current] = (opt === QUESTIONS[current].opts[ansIdx]) ? 'correct' : 'wrong';
+                renderAnswered();
+            }
+            refreshStats();
+        }
+
+        function renderAnswered() {
+            const ansIdx = QUESTIONS[current].answer;
+            buttons.forEach((btn, i) => {
+                btn.classList.remove('is-selected', 'is-correct', 'is-wrong', 'is-locked');
+                btn.classList.add('is-locked');
+                if (i === ansIdx) btn.classList.add('is-correct');
+                else if (btn.textContent === selections[current] && results[current] === 'wrong') btn.classList.add('is-wrong');
+            });
+            if (QUESTIONS[current].answer === null && selections[current]) {
+                const chosen = buttons.find(b => b.textContent === selections[current]);
+                if (chosen) chosen.classList.add('is-selected');
+            } else if (results[current] === 'correct') {
+                fb.className = 'bec-feedback is-good'; fb.textContent = 'Correct! Well done.';
+            } else if (results[current] === 'wrong') {
+                fb.className = 'bec-feedback is-bad'; fb.textContent = 'Not quite — the correct answer is highlighted.';
+            }
+        }
+
+        function renderQuestion() {
+            qText.textContent = QUESTIONS[current].q;
+            qCount.textContent = `${current + 1} of ${QUESTIONS.length}`;
+            fb.className = 'bec-feedback'; fb.innerHTML = '&nbsp;';
+            buildAnswers();
+            if (results[current] !== null) renderAnswered();
+            else if (selections[current] !== null) {
+                const chosen = buttons.find(b => b.textContent === selections[current]);
+                if (chosen) chosen.classList.add('is-selected');
+            }
+            $('btn-prev').disabled = current === 0;
+            $('btn-next').textContent = current === QUESTIONS.length - 1 ? 'Finish' : 'Next Question';
+        }
+
+        function refreshStats() {
+            const answered = results.filter(r => r !== null).length;
+            statProgress.textContent = `${answered}/${QUESTIONS.length}`;
+            statCorrect.textContent = results.filter(r => r === 'correct').length;
+            statMistakes.textContent = results.filter(r => r === 'wrong').length;
+            progressFill.style.width = `${(answered / QUESTIONS.length) * 100}%`;
+        }
+
+        $('btn-next').addEventListener('click', () => {
+            if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+            else {
+                const answered = results.filter(r => r !== null).length;
+                fb.className = 'bec-feedback is-info';
+                fb.textContent = answered === QUESTIONS.length
+                    ? `Finished — ${statCorrect.textContent} correct, ${statMistakes.textContent} mistake(s), 1 to check with your teacher.`
+                    : `${QUESTIONS.length - answered} question(s) left — answer them all to finish.`;
+            }
+        });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; renderQuestion(); } });
+
+        function fullReset() {
+            current = 0;
+            results = Array(QUESTIONS.length).fill(null);
+            selections = Array(QUESTIONS.length).fill(null);
+            refreshStats();
+            renderQuestion();
+        }
+        $('btn-restart').addEventListener('click', fullReset);
+        window.resetSlide = fullReset;
+
+        refreshStats();
+        renderQuestion();
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.09, ease: 'power2.out', clearProps: 'all' });
+        }
     });
 </script>
 </body>

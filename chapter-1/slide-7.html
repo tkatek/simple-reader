@@ -11,13 +11,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
-                    }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
         };
 
         (function applyInitialTheme() {
@@ -27,13 +21,11 @@
                     useDark = window.parent.document.documentElement.classList.contains('dark');
                 }
             } catch (e) {}
-
             if (!useDark) {
                 const saved = localStorage.getItem('theme-preference');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
-
             document.documentElement.classList.toggle('dark', useDark);
         })();
 
@@ -42,148 +34,128 @@
             document.documentElement.classList.toggle('dark', useDark);
             localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
         };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
     </script>
+    <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        .bill-paper {
-            background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(99, 102, 241, 0.12) 28px);
+        .read-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.6rem, 1.6vw, 1.1rem); align-items: stretch; width: min(950px, 100%); max-height: 100%; }
+        .read-questions { display: flex; flex-direction: column; gap: clamp(0.4rem, 1.2vh, 0.75rem); padding: clamp(0.7rem, 2vh, 1.2rem); min-height: 0; }
+        .q-list { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: clamp(0.3rem, 1vh, 0.6rem); }
+        .bill-only-btn { display: none; }
+        @media (max-width: 820px) {
+            .read-grid { grid-template-columns: 1fr; }
+            .bill-panel { display: none; }
+            .bill-only-btn { display: inline-flex; }
         }
-        .answer-line {
-            border-bottom: 2px dashed #cbd5e1;
-        }
-        .dark .answer-line { border-bottom-color: #475569; }
     </style>
 </head>
-<body class="h-full overflow-x-hidden">
-<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
-        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
-    </div>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
 
-    <div class="relative z-10">
-        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
-            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1100px] flex-col items-center justify-center gap-10 px-6 py-10 lg:px-12">
-                <!-- Header -->
-                <div class="header-section text-center opacity-0">
-                    <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        SLIDE 07 — READING
+    <div class="bec-stage" style="gap: clamp(0.55rem, 1.6vh, 1rem)">
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 07 · Reading</span>
+            <h1 class="bec-title" style="font-size:clamp(1.3rem,3.2vh,2.3rem)">Reading Comprehension — <span class="accent">MY CABLE TV BILL</span></h1>
+        </div>
+
+        <div class="read-grid">
+            <!-- The bill document (recreated from the lesson worksheet) -->
+            <div class="bec-card bec-doc bill-panel reveal">
+                <div class="bec-doc-head">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:0.6rem;background:var(--bec-text);color:var(--bec-surface)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                     </span>
-                    <h1 class="mt-6 text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">Reading Comprehension — <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">MY CABLE TV BILL</span></h1>
-                </div>
-
-                <div class="grid w-full grid-cols-1 items-start gap-8 lg:grid-cols-2">
-                    <!-- The bill document (recreated from the lesson worksheet) -->
-                    <div class="bill-card rotate-[-1deg] rounded-[1.25rem] border border-slate-200 bg-white p-7 opacity-0 shadow-[0_35px_70px_-25px_rgba(15,23,42,0.3)] transition-transform duration-500 hover:rotate-0 sm:p-9 dark:border-slate-600 dark:bg-slate-100 dark:text-slate-900">
-                        <div class="flex items-start justify-between gap-4 border-b-2 border-slate-900/80 pb-5">
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
-                                </div>
-                                <div>
-                                    <p class="text-lg font-black uppercase tracking-tight">ESL Cable TV Service</p>
-                                    <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-500">Monthly Statement</p>
-                                </div>
-                            </div>
-                            <p class="shrink-0 text-right text-[10px] font-bold leading-relaxed text-slate-500">BILL<br>NO. 0042</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-x-6 gap-y-3 py-5 text-sm sm:grid-cols-2">
-                            <div class="flex justify-between gap-3 sm:col-span-2">
-                                <span class="font-bold uppercase tracking-wider text-slate-500">Account Number</span>
-                                <span class="font-black">56789-123-8</span>
-                            </div>
-                            <div class="flex justify-between gap-3 sm:col-span-2">
-                                <span class="font-bold uppercase tracking-wider text-slate-500">Billing Period</span>
-                                <span class="font-black">01/01/03 - 01/31/03</span>
-                            </div>
-                            <div class="flex justify-between gap-3 sm:col-span-2">
-                                <span class="font-bold uppercase tracking-wider text-slate-500">Due Date</span>
-                                <span class="font-black">01/03/03</span>
-                            </div>
-                            <div class="flex justify-between gap-3 border-t border-dashed border-slate-300 pt-3 sm:col-span-2">
-                                <span class="font-bold">Monthly Service Charge</span>
-                                <span class="font-black">$44.80</span>
-                            </div>
-                            <div class="flex justify-between gap-3 sm:col-span-2">
-                                <span class="font-bold">Taxes</span>
-                                <span class="font-black">$2.58</span>
-                            </div>
-                            <div class="flex justify-between gap-3 rounded-xl bg-slate-900 px-4 py-3 text-white sm:col-span-2 dark:bg-indigo-600">
-                                <span class="text-sm font-black uppercase tracking-widest">Total Due</span>
-                                <span class="text-lg font-black">$47.38</span>
-                            </div>
-                        </div>
-
-                        <p class="mt-4 text-center text-sm font-black uppercase tracking-[0.3em] text-slate-400">Thank You</p>
+                    <div>
+                        <p class="bec-doc-title">ESL Cable TV Service</p>
+                        <p style="font-size:clamp(0.55rem,1.1vh,0.66rem);font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--bec-text-2)">Monthly Statement</p>
                     </div>
+                </div>
+                <div style="padding-top:0.55rem">
+                    <div class="bec-doc-row"><span>Account Number</span><strong>56789-123-8</strong></div>
+                    <div class="bec-doc-row"><span>Billing Period</span><strong>01/01/03 - 01/31/03</strong></div>
+                    <div class="bec-doc-row"><span>Due Date</span><strong>01/03/03</strong></div>
+                    <div class="bec-doc-row"><span>Monthly Service Charge</span><strong>$44.80</strong></div>
+                    <div class="bec-doc-row"><span>Taxes</span><strong>$2.58</strong></div>
+                    <div class="bec-doc-total"><span style="font-size:0.72em;font-weight:900;letter-spacing:0.15em;text-transform:uppercase">Total Due</span><strong style="font-size:clamp(0.9rem,2vh,1.15rem)">$47.38</strong></div>
+                    <p style="margin-top:0.5rem;text-align:center;font-size:clamp(0.6rem,1.2vh,0.75rem);font-weight:900;letter-spacing:0.3em;text-transform:uppercase;color:var(--bec-text-2)">Thank You</p>
+                </div>
+            </div>
 
-                    <!-- Questions -->
-                    <div class="questions-card flex flex-col gap-4 rounded-[2rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.2)] sm:p-8 dark:border-slate-800 dark:bg-slate-800">
-                        <div class="mb-1 flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                            </div>
-                            <h2 class="text-lg font-black tracking-tight">Read this bill and answer the questions</h2>
-                        </div>
-
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">1</span>
-                            <div class="flex-1">
-                                <p class="mb-2 text-sm font-bold leading-snug text-slate-700 dark:text-slate-200">What service is this bill for?</p>
-                                <div class="answer-line h-6 w-full"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">2</span>
-                            <div class="flex-1">
-                                <p class="mb-2 text-sm font-bold leading-snug text-slate-700 dark:text-slate-200">What month of the year is the billing period?</p>
-                                <div class="answer-line h-6 w-full"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">3</span>
-                            <div class="flex-1">
-                                <p class="mb-2 text-sm font-bold leading-snug text-slate-700 dark:text-slate-200">When is this bill due?</p>
-                                <div class="answer-line h-6 w-full"></div>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">4</span>
-                            <div class="flex-1">
-                                <p class="mb-2 text-sm font-bold leading-snug text-slate-700 dark:text-slate-200">What is the account number?</p>
-                                <div class="answer-line h-6 w-full"></div>
-                            </div>
-                        </div>
+            <!-- Questions -->
+            <div class="bec-card read-questions reveal">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <p class="bec-quiz-instruction">Read this bill and answer the questions:</p>
+                    <button class="bec-btn bec-btn-soft bill-only-btn" id="btn-bill">View Bill</button>
+                </div>
+                <div class="q-list">
+                    <div class="bec-qrow">
+                        <span class="bec-qrow-num">1</span>
+                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">What service is this bill for?</p><div class="bec-ansline"></div></div>
+                    </div>
+                    <div class="bec-qrow">
+                        <span class="bec-qrow-num">2</span>
+                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">What month of the year is the billing period?</p><div class="bec-ansline"></div></div>
+                    </div>
+                    <div class="bec-qrow">
+                        <span class="bec-qrow-num">3</span>
+                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">When is this bill due?</p><div class="bec-ansline"></div></div>
+                    </div>
+                    <div class="bec-qrow">
+                        <span class="bec-qrow-num">4</span>
+                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">What is the account number?</p><div class="bec-ansline"></div></div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- View Bill overlay (small screens) -->
+    <div class="bec-overlay" id="bill-overlay">
+        <div class="bec-card bec-modal">
+            <div class="bec-modal-head">
+                <h2 class="bec-modal-title">MY CABLE TV BILL</h2>
+                <button class="bec-modal-close" id="bill-close" aria-label="Close bill">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="bec-modal-body" id="bill-modal-body"></div>
         </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        function playIn() {
-            const els = ['.header-section', '.bill-card', '.questions-card'];
-            if (!window.gsap) {
-                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
-                return;
-            }
-            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-            tl.to('.header-section', { opacity: 1, duration: 0.7 })
-                .to('.bill-card', { opacity: 1, y: -16, duration: 0.8, clearProps: 'transform' }, '-=0.3')
-                .to('.questions-card', { opacity: 1, y: -16, duration: 0.8, clearProps: 'transform' }, '-=0.6');
+        const billPanel = document.querySelector('.bill-panel');
+        const overlay = document.getElementById('bill-overlay');
+        const modalBody = document.getElementById('bill-modal-body');
 
-            window.resetSlide = () => {
-                tl.pause(0);
-                gsap.set(els.join(','), { clearProps: 'all' });
-                tl.restart();
-            };
+        document.getElementById('btn-bill').addEventListener('click', () => {
+            modalBody.innerHTML = '';
+            const clone = billPanel.cloneNode(true);
+            clone.classList.remove('bill-panel');
+            clone.style.display = '';
+            modalBody.appendChild(clone);
+            overlay.classList.add('is-open');
+        });
+        document.getElementById('bill-close').addEventListener('click', () => overlay.classList.remove('is-open'));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.classList.remove('is-open'); });
+
+        window.resetSlide = function resetSlide() { overlay.classList.remove('is-open'); };
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
         }
-
-        playIn();
     });
 </script>
 </body>

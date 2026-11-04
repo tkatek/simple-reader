@@ -11,13 +11,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
-                    }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
         };
 
         (function applyInitialTheme() {
@@ -27,13 +21,11 @@
                     useDark = window.parent.document.documentElement.classList.contains('dark');
                 }
             } catch (e) {}
-
             if (!useDark) {
                 const saved = localStorage.getItem('theme-preference');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
-
             document.documentElement.classList.toggle('dark', useDark);
         })();
 
@@ -42,185 +34,99 @@
             document.documentElement.classList.toggle('dark', useDark);
             localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
         };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
     </script>
+    <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <style>
-        .sentence-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-        }
-        .sentence-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 25px 50px -20px rgba(79, 70, 229, 0.4);
-        }
-        .sentence-card.is-speaking {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25), 0 25px 50px -20px rgba(79, 70, 229, 0.5);
-        }
-        .speak-icon { transition: all 0.3s ease; }
-        .sentence-card.is-speaking .speak-icon {
-            background: #4f46e5;
-            color: #fff;
-            transform: scale(1.1);
-        }
-        @keyframes soundPulse {
-            0%, 100% { opacity: 0.35; }
-            50% { opacity: 1; }
-        }
-        .sentence-card.is-speaking .sound-dot { animation: soundPulse 0.8s infinite; }
-        .sentence-card.is-speaking .sound-dot:nth-child(2) { animation-delay: 0.2s; }
-        .sentence-card.is-speaking .sound-dot:nth-child(3) { animation-delay: 0.4s; }
-    </style>
 </head>
-<body class="h-full overflow-x-hidden">
-<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
-        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
-    </div>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
 
-    <div class="relative z-10">
-        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
-            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1100px] flex-col items-center justify-center gap-10 px-6 py-10 lg:px-12">
-                <!-- Header -->
-                <div class="header-section text-center opacity-0">
-                    <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        SLIDE 09 — USEFUL PHRASES
-                    </span>
-                    <h1 class="mt-6 text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">New <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">Language;</span></h1>
-                    <p class="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-                        Click a sentence to hear it and practise reading
-                    </p>
-                </div>
+    <div class="bec-stage" style="gap: clamp(0.7rem, 2vh, 1.2rem)">
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 09 · Useful Phrases</span>
+            <h1 class="bec-title">New <span class="accent">Language;</span></h1>
+            <p class="bec-sub">Tap a phrase to hear it — audio will be connected by your teacher.</p>
+        </div>
 
-                <div class="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-                    <!-- Clickable sentences -->
-                    <div class="flex flex-col gap-4">
-                        <button class="sentence-card flex items-center gap-5 rounded-[1.75rem] border-2 border-slate-100 bg-white p-5 text-left opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] sm:p-6 dark:border-slate-700 dark:bg-slate-800" data-say="Your total is....">
-                            <span class="speak-icon flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-                            </span>
-                            <span class="flex-1 text-lg font-bold leading-snug tracking-tight sm:text-xl">Your total is....</span>
-                            <span class="flex items-end gap-[3px] pb-1">
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-2.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                            </span>
-                        </button>
-
-                        <button class="sentence-card flex items-center gap-5 rounded-[1.75rem] border-2 border-slate-100 bg-white p-5 text-left opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] sm:p-6 dark:border-slate-700 dark:bg-slate-800" data-say="pay by card, cash, check">
-                            <span class="speak-icon flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-                            </span>
-                            <span class="flex-1 text-lg font-bold leading-snug tracking-tight sm:text-xl">pay by card /cash/ check</span>
-                            <span class="flex items-end gap-[3px] pb-1">
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-2.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                            </span>
-                        </button>
-
-                        <button class="sentence-card flex items-center gap-5 rounded-[1.75rem] border-2 border-slate-100 bg-white p-5 text-left opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] sm:p-6 dark:border-slate-700 dark:bg-slate-800" data-say="Insert your card">
-                            <span class="speak-icon flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-                            </span>
-                            <span class="flex-1 text-lg font-bold leading-snug tracking-tight sm:text-xl">Insert your card</span>
-                            <span class="flex items-end gap-[3px] pb-1">
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-2.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                            </span>
-                        </button>
-
-                        <button class="sentence-card flex items-center gap-5 rounded-[1.75rem] border-2 border-slate-100 bg-white p-5 text-left opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] sm:p-6 dark:border-slate-700 dark:bg-slate-800" data-say="Here's your receipt.">
-                            <span class="speak-icon flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-                            </span>
-                            <span class="flex-1 text-lg font-bold leading-snug tracking-tight sm:text-xl">Here’s your receipt.</span>
-                            <span class="flex items-end gap-[3px] pb-1">
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-2.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                            </span>
-                        </button>
-
-                        <button class="sentence-card flex items-center gap-5 rounded-[1.75rem] border-2 border-slate-100 bg-white p-5 text-left opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] sm:p-6 dark:border-slate-700 dark:bg-slate-800" data-say="I would like to open a bank account">
-                            <span class="speak-icon flex h-12 w-12 min-w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-                            </span>
-                            <span class="flex-1 text-lg font-bold leading-snug tracking-tight sm:text-xl">I would like to open a bank account</span>
-                            <span class="flex items-end gap-[3px] pb-1">
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-2.5 w-1.5 rounded-full bg-indigo-400"></span>
-                                <span class="sound-dot h-1.5 w-1.5 rounded-full bg-indigo-400"></span>
-                            </span>
-                        </button>
-                    </div>
-
-                    <!-- Image slot: 3D microphone illustration (tech lead will host the real asset) -->
-                    <div class="image-section relative flex items-center justify-center">
-                        <!-- IMAGE SLOT: replace inner block with <img src="img/slide-9-microphone.png" class="h-full w-full object-contain" alt="..."> -->
-                        <div class="img-slot group relative flex aspect-square w-full max-w-[340px] flex-col items-center justify-center gap-4 rounded-[2.5rem] border-2 border-dashed border-indigo-200 bg-white/60 p-8 text-center shadow-[0_40px_80px_-40px_rgba(15,23,42,0.2)] backdrop-blur transition-colors dark:border-indigo-500/40 dark:bg-slate-800/60">
-                            <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-500 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400 dark:text-indigo-500">Image Placeholder</p>
-                                <p class="mt-2 text-xs font-bold leading-relaxed text-slate-500 dark:text-slate-400">3D illustration — microphone</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- ═══ TECH LEAD — AUDIO INTEGRATION ═════════════════════════
+             Each row carries data-say (the phrase) and an empty data-audio.
+             Set data-audio to the hosted audio URL per phrase (or fill
+             PHRASE_AUDIO below with a {phrase: url} map) and the speaker
+             buttons enable automatically. No TTS fallback by design. -->
+        <div class="bec-phrase-list">
+            <div class="bec-card bec-phrase-row reveal">
+                <button class="bec-speak" data-say="Your total is...." data-audio="" aria-label="Listen: Your total is...." disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                </button>
+                <p class="bec-phrase-text">Your total is....</p>
+            </div>
+            <div class="bec-card bec-phrase-row reveal">
+                <button class="bec-speak" data-say="pay by card /cash/ check" data-audio="" aria-label="Listen: pay by card, cash, check" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                </button>
+                <p class="bec-phrase-text">pay by card /cash/ check</p>
+            </div>
+            <div class="bec-card bec-phrase-row reveal">
+                <button class="bec-speak" data-say="Insert your card" data-audio="" aria-label="Listen: Insert your card" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                </button>
+                <p class="bec-phrase-text">Insert your card</p>
+            </div>
+            <div class="bec-card bec-phrase-row reveal">
+                <button class="bec-speak" data-say="Here’s your receipt." data-audio="" aria-label="Listen: Here's your receipt." disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                </button>
+                <p class="bec-phrase-text">Here’s your receipt.</p>
+            </div>
+            <div class="bec-card bec-phrase-row reveal">
+                <button class="bec-speak" data-say="I would like to open a bank account" data-audio="" aria-label="Listen: I would like to open a bank account" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                </button>
+                <p class="bec-phrase-text">I would like to open a bank account</p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        function stopSpeaking() {
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
-            document.querySelectorAll('.sentence-card.is-speaking').forEach(c => c.classList.remove('is-speaking'));
-        }
+    /* ═══ TECH LEAD: optional map of phrase → hosted audio URL, e.g.
+       const PHRASE_AUDIO = { "Insert your card": "https://host/a/insert.mp3" };
+       When a phrase has a URL here (or in its data-audio attribute), its
+       speaker button enables and plays the real recording. ═══ */
+    const PHRASE_AUDIO = {};
 
-        document.querySelectorAll('.sentence-card').forEach(card => {
-            card.addEventListener('click', () => {
-                stopSpeaking();
-                if (!window.speechSynthesis) return;
-                card.classList.add('is-speaking');
-                const u = new SpeechSynthesisUtterance(card.dataset.say);
-                u.rate = 0.88;
-                u.onend = () => card.classList.remove('is-speaking');
-                u.onerror = () => card.classList.remove('is-speaking');
-                window.speechSynthesis.speak(u);
-            });
+    document.addEventListener('DOMContentLoaded', () => {
+        let current = null;
+        document.querySelectorAll('.bec-speak').forEach(btn => {
+            const src = btn.dataset.audio || PHRASE_AUDIO[btn.dataset.say];
+            if (src) {
+                btn.disabled = false;
+                const audio = new Audio(src);
+                audio.preload = 'metadata';
+                btn.addEventListener('click', () => {
+                    if (current && current !== audio) { current.pause(); current.currentTime = 0; }
+                    if (!audio.paused) { audio.pause(); audio.currentTime = 0; }
+                    else { current = audio; audio.play(); }
+                });
+            }
         });
 
-        window.stopSlideAudio = stopSpeaking;
+        window.stopSlideAudio = function stopSlideAudio() { if (current) { current.pause(); current.currentTime = 0; } };
+        window.resetSlide = function resetSlide() {};
 
-        function playIn() {
-            const els = ['.header-section', '.sentence-card', '.image-section'];
-            if (!window.gsap) {
-                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
-                return;
-            }
-            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-            tl.to('.header-section', { opacity: 1, duration: 0.7 })
-                .to('.sentence-card', { opacity: 1, x: -12, duration: 0.6, stagger: 0.13, clearProps: 'transform' }, '-=0.3')
-                .fromTo('.image-section', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.8, clearProps: 'transform' }, '-=0.7');
-
-            window.resetSlide = () => {
-                tl.pause(0);
-                gsap.set(els.join(','), { clearProps: 'all' });
-                tl.restart();
-                stopSpeaking();
-            };
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.3, stagger: 0.08, ease: 'power2.out', clearProps: 'all' });
         }
-
-        playIn();
     });
 </script>
 </body>

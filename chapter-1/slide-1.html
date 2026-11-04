@@ -11,13 +11,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
-                    }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
         };
 
         (function applyInitialTheme() {
@@ -27,13 +21,11 @@
                     useDark = window.parent.document.documentElement.classList.contains('dark');
                 }
             } catch (e) {}
-
             if (!useDark) {
                 const saved = localStorage.getItem('theme-preference');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
-
             document.documentElement.classList.toggle('dark', useDark);
         })();
 
@@ -42,97 +34,75 @@
             document.documentElement.classList.toggle('dark', useDark);
             localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
         };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
     </script>
+    <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
-<body class="h-full overflow-x-hidden">
-<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
-        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
-    </div>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
 
-    <div class="relative z-10">
-        <div class="relative min-h-[100dvh] overflow-x-hidden overflow-y-auto">
-            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1200px] items-center px-6 py-10 lg:px-16 lg:py-16">
-                <div class="slide-content grid w-full grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
-                    <!-- Text section -->
-                    <div class="text-section z-10 text-center lg:text-left">
-                        <div class="unit-badge mb-6 flex flex-wrap items-center justify-center gap-2 opacity-0 lg:justify-start">
-                            <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">A1. Beginner</span>
-                            <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">Unit.4</span>
-                            <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">Home and Daily Needs</span>
-                        </div>
-
-                        <p class="lesson-label mb-2 text-sm font-black uppercase tracking-[0.35em] text-indigo-500 opacity-0 dark:text-indigo-400">Lesson.3</p>
-                        <h1 class="hero-title mb-8 text-5xl font-black leading-[1.02] tracking-[-0.04em] sm:text-6xl lg:text-[5.5rem] opacity-0">
-                            Paying <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">Bills</span>
-                        </h1>
-
-                        <!-- Idiom card -->
-                        <div class="idiom-card relative mb-8 inline-block max-w-[520px] rounded-[1.75rem] border border-indigo-100 bg-white/80 p-6 text-left opacity-0 shadow-[0_20px_50px_-20px_rgba(79,70,229,0.25)] backdrop-blur sm:p-8 dark:border-indigo-500/30 dark:bg-slate-800/80 lg:mx-0 mx-auto">
-                            <span class="absolute -top-3 left-6 rounded-full bg-indigo-600 px-3 py-1 text-[9px] font-black uppercase tracking-[0.25em] text-white shadow-lg shadow-indigo-500/30 dark:bg-indigo-500">Idiom of the lesson</span>
-                            <p class="idiom-quote text-xl font-black leading-snug tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">“Cut your coat according to your cloth”</p>
-                            <p class="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">Live in a way that matches what you can afford.</p>
-                        </div>
-
-                        <div class="flex items-center justify-center gap-6 opacity-0 lg:justify-start" id="cta-line">
-                            <div class="h-px w-20 bg-indigo-200 dark:bg-indigo-800"></div>
-                            <span class="text-xs font-black uppercase tracking-widest text-indigo-400 dark:text-indigo-500">Let's Get Started</span>
-                        </div>
-                    </div>
-
-                    <!-- Image slot: photo of hands paying a bill on a smartphone (tech lead will host the real asset) -->
-                    <div class="image-section relative flex items-center justify-center lg:justify-end">
-                        <!-- IMAGE SLOT: replace inner block with <img src="img/slide-1-photo.png" class="h-full w-full object-cover" alt="..."> -->
-                        <div class="img-slot group relative flex aspect-[4/5] w-full max-w-[420px] flex-col items-center justify-center gap-4 overflow-hidden rounded-[2.5rem] border-2 border-dashed border-indigo-200 bg-white/60 p-8 text-center shadow-[0_40px_80px_-40px_rgba(15,23,42,0.2)] backdrop-blur transition-colors dark:border-indigo-500/40 dark:bg-slate-800/60">
-                            <div class="flex h-16 w-16 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-500 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400 dark:text-indigo-500">Image Placeholder</p>
-                                <p class="mt-2 text-xs font-bold leading-relaxed text-slate-500 dark:text-slate-400">Photo — paying a bill on a smartphone with a bank card</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="bec-stage" style="gap: clamp(0.8rem, 2.2vh, 1.6rem)">
+        <!-- Unit badges -->
+        <div class="reveal" style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.45rem">
+            <span class="bec-kicker">A1. Beginner</span>
+            <span class="bec-kicker">Unit.4</span>
+            <span class="bec-kicker">Home and Daily Needs</span>
         </div>
+
+        <!-- Lesson title -->
+        <div class="bec-header reveal">
+            <span class="bec-kicker" style="background:transparent;border-color:transparent;letter-spacing:0.3em;color:var(--bec-text-2)">Lesson.3</span>
+            <h1 class="bec-title" style="font-size:clamp(2.2rem,7.5vh,4.6rem)">Paying <span class="accent">Bills</span></h1>
+        </div>
+
+        <!-- Idiom of the lesson -->
+        <div class="bec-card reveal" style="width:min(560px,100%);padding:clamp(0.8rem,2.4vh,1.4rem);text-align:center;position:relative">
+            <span style="position:absolute;top:-0.65rem;left:50%;transform:translateX(-50%);background:var(--bec-brand);color:#fff;border-radius:9999px;padding:0.18rem 0.85rem;font-size:clamp(0.55rem,1.1vh,0.66rem);font-weight:900;letter-spacing:0.2em;text-transform:uppercase;box-shadow:0 8px 16px -8px rgba(79,70,229,0.6)">Idiom of the lesson</span>
+            <p style="font-size:clamp(1rem,2.7vh,1.6rem);font-weight:900;letter-spacing:-0.01em;line-height:1.3">“Cut your coat according to your cloth”</p>
+            <p style="margin-top:0.4rem;font-size:clamp(0.7rem,1.5vh,0.9rem);font-weight:600;color:var(--bec-text-2)">Live in a way that matches what you can afford.</p>
+        </div>
+
+        <!-- Start action -->
+        <button class="bec-btn bec-btn-primary reveal" id="btn-start" style="padding:0.75rem 2.1rem;font-size:clamp(0.75rem,1.6vh,0.92rem)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Start Lesson
+        </button>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const revealEls = document.querySelectorAll('.unit-badge, .lesson-label, .hero-title, .idiom-card, #cta-line, .image-section');
+        const btn = document.getElementById('btn-start');
+        btn.addEventListener('click', () => {
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'BEC_NAV', action: 'next' }, '*');
+                    return;
+                }
+            } catch (e) {}
+            try {
+                if (window.parent && typeof window.parent.nextSlide === 'function') {
+                    window.parent.nextSlide();
+                }
+            } catch (e) {}
+        });
 
-        function playIn() {
-            if (!window.gsap) {
-                revealEls.forEach((el) => {
-                    el.style.opacity = '1';
-                    el.style.transform = 'none';
-                });
-                return;
-            }
+        window.resetSlide = function resetSlide() {};
 
-            const tl = gsap.timeline();
-            tl.to('.unit-badge', { opacity: 1, y: -10, duration: 0.5, ease: 'back.out(1.7)' });
-            tl.to('.lesson-label', { opacity: 1, duration: 0.4 }, '-=0.2');
-            tl.to('.hero-title', { opacity: 1, y: -15, duration: 0.6, ease: 'power4.out' }, '-=0.25');
-            tl.to('.idiom-card', { opacity: 1, y: -10, duration: 0.55, ease: 'power3.out' }, '-=0.3');
-            tl.to('#cta-line', { opacity: 1, duration: 0.5 }, '-=0.2');
-            tl.fromTo('.image-section', { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out', clearProps: 'transform' }, '-=0.5');
-
-            window.resetSlide = () => {
-                tl.pause(0);
-                gsap.set('.unit-badge, .lesson-label, .hero-title, .idiom-card, #cta-line, .image-section', { clearProps: 'all' });
-                tl.restart();
-            };
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline()
+                .from('.bec-stage > .reveal', { opacity: 0, y: 12, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
         }
-
-        playIn();
     });
 </script>
 </body>

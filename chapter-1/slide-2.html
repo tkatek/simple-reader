@@ -11,13 +11,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
-                    }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
         };
 
         (function applyInitialTheme() {
@@ -27,13 +21,11 @@
                     useDark = window.parent.document.documentElement.classList.contains('dark');
                 }
             } catch (e) {}
-
             if (!useDark) {
                 const saved = localStorage.getItem('theme-preference');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
-
             document.documentElement.classList.toggle('dark', useDark);
         })();
 
@@ -42,230 +34,323 @@
             document.documentElement.classList.toggle('dark', useDark);
             localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
         };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
     </script>
+    <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
-<body class="h-full overflow-x-hidden">
-<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
-        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage">
+        <!-- Title -->
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 02 · Quick Revision</span>
+            <h1 class="bec-title">First let’s do a quick <span class="accent">revision!</span></h1>
+        </div>
+
+        <!-- Score bar -->
+        <div class="bec-statbar reveal">
+            <div class="bec-stat"><span class="bec-stat-label">Progress</span><span class="bec-stat-value" id="stat-progress">0/4</span></div>
+            <div class="bec-stat is-good"><span class="bec-stat-label">Correct</span><span class="bec-stat-value" id="stat-correct">0</span></div>
+            <div class="bec-stat is-bad"><span class="bec-stat-label">Mistakes</span><span class="bec-stat-value" id="stat-mistakes">0</span></div>
+            <div class="bec-stat"><span class="bec-stat-label">Time</span><span class="bec-stat-value" id="stat-time">00:00</span></div>
+        </div>
+
+        <!-- Quiz container -->
+        <div class="bec-card bec-quiz reveal">
+            <div class="bec-quiz-top">
+                <p class="bec-quiz-instruction">Choose the correct answer:</p>
+                <div class="flex items-center gap-2">
+                    <span class="bec-qcount" id="q-count">1 of 4</span>
+                    <button class="bec-btn bec-btn-soft" id="btn-show">Show Answer</button>
+                </div>
+            </div>
+
+            <div class="bec-progress"><div class="bec-progress-fill" id="quiz-progress"></div></div>
+
+            <!-- ═══ TECH LEAD — AUDIO INTEGRATION ═══════════════════════════
+                 Set AUDIO_SRC below to the hosted audio file URL, e.g.:
+                 const AUDIO_SRC = "https://your-host/audio/revision.mp3";
+                 The player enables itself automatically (play/pause, progress,
+                 time). Leave empty to keep controls disabled. No TTS fallback
+                 by design — the recording is provided by the tech lead only. -->
+            <div class="bec-audio is-disabled" id="audio-row">
+                <button class="bec-play" id="btn-audio" aria-label="Play audio" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="icon-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="icon-pause hidden"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>
+                </button>
+                <div class="bec-track"><div class="bec-track-fill" id="audio-fill"></div></div>
+                <span class="bec-time" id="audio-time">--:-- / --:--</span>
+                <button class="bec-btn bec-btn-outline" id="btn-script">Script</button>
+            </div>
+
+            <p class="bec-question" id="q-text">She doesn’t plan to buy anything else for the apartment.</p>
+
+            <div class="bec-answers">
+                <button class="bec-ans" data-value="true">True</button>
+                <button class="bec-ans" data-value="false">False</button>
+            </div>
+
+            <p class="bec-feedback" id="feedback">&nbsp;</p>
+
+            <div class="bec-quiznav">
+                <button class="bec-btn bec-btn-outline" id="btn-restart">Restart Quiz</button>
+                <button class="bec-btn bec-btn-outline" id="btn-hint">Hint</button>
+                <button class="bec-btn bec-btn-outline" id="btn-prev">Previous Question</button>
+                <button class="bec-btn bec-btn-primary" id="btn-next">Next Question</button>
+            </div>
+        </div>
     </div>
 
-    <div class="relative z-10">
-        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
-            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1200px] flex-col items-center justify-center gap-10 px-6 py-10 lg:px-16">
-                <!-- Header -->
-                <div class="header-section text-center opacity-0">
-                    <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
-                        SLIDE 02 — QUICK REVISION
-                    </span>
-                    <h1 class="mt-6 text-3xl font-black tracking-tight sm:text-4xl md:text-5xl">First let’s do a quick revision!</h1>
-                </div>
-
-                <div class="grid w-full grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-                    <!-- Audio script card -->
-                    <div class="script-card relative flex flex-col rounded-[2rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.2)] sm:p-8 dark:border-slate-800 dark:bg-slate-800">
-                        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <h2 class="text-lg font-black tracking-tight">Listen and tick (true/false)</h2>
-                                <p class="mt-1 text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Audio script</p>
-                            </div>
-                            <!-- AUDIO SLOT: tech lead can swap in a real audio file (audio/revision.mp3); meanwhile the button reads the script aloud -->
-                            <button id="play-audio-btn" class="group flex items-center gap-2.5 rounded-2xl bg-indigo-600 px-5 py-3 text-xs font-extrabold uppercase tracking-[0.1em] text-white shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 hover:bg-indigo-500 active:translate-y-0 dark:bg-indigo-500 dark:hover:bg-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3" class="play-icon"/></svg>
-                                <span id="play-audio-label">Play audio</span>
-                            </button>
-                        </div>
-
-                        <div id="transcript" class="flex-1 space-y-4">
-                            <div class="flex gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">1</span>
-                                <p class="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300"><span class="font-black text-slate-900 dark:text-slate-100">A:</span> Does the kitchen have everything you need, like a stove and a refrigerator?<br><span class="font-black text-slate-900 dark:text-slate-100">B:</span> There’s a stove, but not a refrigerator. I need to buy one.</p>
-                            </div>
-                            <div class="flex gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">2</span>
-                                <p class="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300"><span class="font-black text-slate-900 dark:text-slate-100">A:</span> You don’t have a bed in your bedroom?<br><span class="font-black text-slate-900 dark:text-slate-100">B:</span> Well, I have a TV. But for now, I only have a mattress on the floor.<br><span class="font-black text-slate-900 dark:text-slate-100">A:</span> Really?</p>
-                            </div>
-                            <div class="flex gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">3</span>
-                                <p class="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300"><span class="font-black text-slate-900 dark:text-slate-100">A:</span> We don’t have much furniture yet. We don’t even have a sofa in the living room.<br><span class="font-black text-slate-900 dark:text-slate-100">B:</span> Hey. I’ve one I can sell you.<br><span class="font-black text-slate-900 dark:text-slate-100">A:</span> Really? Great.</p>
-                            </div>
-                            <div class="flex gap-3">
-                                <span class="flex h-7 w-7 min-w-7 items-center justify-center rounded-lg bg-indigo-50 text-[11px] font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">4</span>
-                                <p class="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300"><span class="font-black text-slate-900 dark:text-slate-100">A:</span> The bathroom is very small. There’s just a shower and a toilet.<br><span class="font-black text-slate-900 dark:text-slate-100">B:</span> You can come and take a bath at my place any time.<br><span class="font-black text-slate-900 dark:text-slate-100">A:</span> Thanks, I probably will.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- True / False card -->
-                    <div class="tf-card rounded-[2rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_25px_60px_-30px_rgba(15,23,42,0.2)] sm:p-8 dark:border-slate-800 dark:bg-slate-800">
-                        <div class="mb-5 flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                            </div>
-                            <h2 class="text-lg font-black tracking-tight">True or false? Tap to tick</h2>
-                        </div>
-
-                        <div class="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-700">
-                            <div class="grid grid-cols-[1fr_64px_64px] items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400 sm:grid-cols-[1fr_84px_84px]">
-                                <span>Statement</span>
-                                <span class="text-center text-emerald-500">True</span>
-                                <span class="text-center text-rose-500">False</span>
-                            </div>
-                            <div class="tf-row divide-y divide-slate-100 dark:divide-slate-700" id="tf-list">
-                                <div class="tf-item grid grid-cols-[1fr_64px_64px] items-center gap-2 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:grid-cols-[1fr_84px_84px] dark:hover:bg-slate-900/40" data-answer="false">
-                                    <p class="pr-2 text-sm font-semibold leading-snug text-slate-700 dark:text-slate-200">She doesn’t plan to buy anything else for the apartment.</p>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-emerald-400 hover:text-emerald-400 dark:border-slate-600" aria-label="True for statement 1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                                    </button>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-rose-400 hover:text-rose-400 dark:border-slate-600" aria-label="False for statement 1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                                    </button>
-                                </div>
-                                <div class="tf-item grid grid-cols-[1fr_64px_64px] items-center gap-2 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:grid-cols-[1fr_84px_84px] dark:hover:bg-slate-900/40" data-answer="false">
-                                    <p class="pr-2 text-sm font-semibold leading-snug text-slate-700 dark:text-slate-200">He has a new bed.</p>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-emerald-400 hover:text-emerald-400 dark:border-slate-600" aria-label="True for statement 2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                                    </button>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-rose-400 hover:text-rose-400 dark:border-slate-600" aria-label="False for statement 2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                                    </button>
-                                </div>
-                                <div class="tf-item grid grid-cols-[1fr_64px_64px] items-center gap-2 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:grid-cols-[1fr_84px_84px] dark:hover:bg-slate-900/40" data-answer="true">
-                                    <p class="pr-2 text-sm font-semibold leading-snug text-slate-700 dark:text-slate-200">She wants to buy some more furniture.</p>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-emerald-400 hover:text-emerald-400 dark:border-slate-600" aria-label="True for statement 3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                                    </button>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-rose-400 hover:text-rose-400 dark:border-slate-600" aria-label="False for statement 3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                                    </button>
-                                </div>
-                                <div class="tf-item grid grid-cols-[1fr_64px_64px] items-center gap-2 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:grid-cols-[1fr_84px_84px] dark:hover:bg-slate-900/40" data-answer="true">
-                                    <p class="pr-2 text-sm font-semibold leading-snug text-slate-700 dark:text-slate-200">She’ll probably take a bath at her friend’s place.</p>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-emerald-400 hover:text-emerald-400 dark:border-slate-600" aria-label="True for statement 4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                                    </button>
-                                    <button class="tf-cell mx-auto flex h-8 w-8 items-center justify-center rounded-lg border-2 border-slate-200 text-transparent transition-all hover:border-rose-400 hover:text-rose-400 dark:border-slate-600" aria-label="False for statement 4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Listening source embed: original exercise is "Practice Listening English Exercises for A1 - Apartment Living" (English Practice Online) -->
-                        <!-- MEDIA SLOT: replace this placeholder with the embedded audio/video player iframe when hosted -->
-                        <div class="img-slot mt-5 flex items-center gap-4 rounded-2xl border-2 border-dashed border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-500/40 dark:bg-indigo-500/10">
-                            <div class="flex h-11 w-11 min-w-11 items-center justify-center rounded-xl bg-white text-indigo-500 shadow-sm dark:bg-slate-900 dark:text-indigo-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><circle cx="12" cy="12" r="10"/></svg>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="truncate text-sm font-black tracking-tight">Practice Listening English Exercises for A1 — Apartment Living</p>
-                                <p class="text-xs font-semibold text-slate-400">English Practice Online · media embed placeholder</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Script overlay: paginated transcript, no scrolling -->
+    <div class="bec-overlay" id="script-overlay">
+        <div class="bec-card bec-modal">
+            <div class="bec-modal-head">
+                <h2 class="bec-modal-title">Audio script</h2>
+                <button class="bec-modal-close" id="script-close" aria-label="Close script">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="bec-modal-body" id="script-body"></div>
+            <div class="bec-modal-nav">
+                <button class="bec-pager-arrow" id="script-prev" aria-label="Previous part">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <span class="bec-pager-count" id="script-count">1 / 4</span>
+                <button class="bec-pager-arrow" id="script-next" aria-label="Next part">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    /* ═══ TECH LEAD: set this to the hosted audio URL to enable the player ═══ */
+    const AUDIO_SRC = "";
+
+    const QUESTIONS = [
+        { text: "She doesn’t plan to buy anything else for the apartment.", answer: false, hint: "Listen again to conversation 1 — the kitchen and the refrigerator." },
+        { text: "He has a new bed.", answer: false, hint: "Listen again to conversation 2 — the bedroom and the mattress on the floor." },
+        { text: "She wants to buy some more furniture.", answer: true, hint: "Listen again to conversation 3 — the living room and the sofa." },
+        { text: "She’ll probably take a bath at her friend’s place.", answer: true, hint: "Listen again to conversation 4 — the small bathroom." }
+    ];
+
+    const SCRIPT = [
+        ["A: Does the kitchen have everything you need, like a stove and a refrigerator?",
+         "B: There’s a stove, but not a refrigerator. I need to buy one."],
+        ["A: You don’t have a bed in your bedroom?",
+         "B: Well, I have a TV. But for now, I only have a mattress on the floor.",
+         "A: Really?"],
+        ["A: We don’t have much furniture yet. We don’t even have a sofa in the living room.",
+         "B: Hey. I’ve one I can sell you.",
+         "A: Really? Great."],
+        ["A: The bathroom is very small. There’s just a shower and a toilet.",
+         "B: You can come and take a bath at my place any time.",
+         "A: Thanks, I probably will."]
+    ];
+
     document.addEventListener('DOMContentLoaded', () => {
-        const playBtn = document.getElementById('play-audio-btn');
-        const playLabel = document.getElementById('play-audio-label');
-        const playIcon = playBtn ? playBtn.querySelector('.play-icon') : null;
-        let playing = false;
+        const $ = (id) => document.getElementById(id);
+        const qText = $('q-text'), qCount = $('q-count'), fb = $('feedback');
+        const ansBtns = Array.from(document.querySelectorAll('.bec-answers .bec-ans'));
+        const statProgress = $('stat-progress'), statCorrect = $('stat-correct'), statMistakes = $('stat-mistakes'), statTime = $('stat-time');
+        const progressFill = $('quiz-progress');
+        const overlay = $('script-overlay'), scriptBody = $('script-body');
 
-        const SCRIPT = [
-            { speaker: 'A', text: 'Does the kitchen have everything you need, like a stove and a refrigerator?' },
-            { speaker: 'B', text: "There's a stove, but not a refrigerator. I need to buy one." },
-            { speaker: 'A', text: "You don't have a bed in your bedroom?" },
-            { speaker: 'B', text: 'Well, I have a TV. But for now, I only have a mattress on the floor.' },
-            { speaker: 'A', text: 'Really?' },
-            { speaker: 'A', text: "We don't have much furniture yet. We don't even have a sofa in the living room." },
-            { speaker: 'B', text: "Hey. I've one I can sell you." },
-            { speaker: 'A', text: 'Really? Great.' },
-            { speaker: 'A', text: 'The bathroom is very small. There\'s just a shower and a toilet.' },
-            { speaker: 'B', text: 'You can come and take a bath at my place any time.' },
-            { speaker: 'A', text: 'Thanks, I probably will.' }
-        ];
+        let current = 0;
+        let results = [null, null, null, null]; // 'correct' | 'wrong' | 'revealed'
+        let selections = [null, null, null, null];
+        let timerId = null, seconds = 0, timerStarted = false;
+        let audio = null, audioPlaying = false;
 
-        function stopPlayback() {
-            playing = false;
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
-            if (playLabel) playLabel.textContent = 'Play audio';
-            if (playIcon) playIcon.setAttribute('points', '6 3 20 12 6 21 6 3');
-        }
-
-        if (playBtn) {
-            playBtn.addEventListener('click', () => {
-                if (playing) { stopPlayback(); return; }
-                if (!window.speechSynthesis) return;
-                playing = true;
-                playLabel.textContent = 'Stop audio';
-                if (playIcon) playIcon.setAttribute('points', '8 5 8 19 16 12 8 5');
-
-                const voices = window.speechSynthesis.getVoices();
-                SCRIPT.forEach((line, i) => {
-                    const u = new SpeechSynthesisUtterance(line.text);
-                    u.rate = 0.92;
-                    const v = voices.find(v => v.name.toLowerCase().includes('female')) || voices[i % Math.max(1, voices.length)];
-                    if (line.speaker === 'B') {
-                        const vb = voices.find(v => v.name.toLowerCase().includes('male')) || voices[(i + 1) % Math.max(1, voices.length)];
-                        if (vb) u.voice = vb; else u.pitch = 0.85;
-                    } else if (v) {
-                        u.voice = v; u.pitch = 1.1;
-                    }
-                    if (i === SCRIPT.length - 1) u.onend = stopPlayback;
-                    window.speechSynthesis.speak(u);
-                });
+        /* ── Audio player (activates only when AUDIO_SRC is set) ── */
+        function setupAudio() {
+            if (!AUDIO_SRC) return; // stays disabled — no fake playback, no TTS
+            audio = new Audio(AUDIO_SRC);
+            audio.preload = 'metadata';
+            $('audio-row').classList.remove('is-disabled');
+            $('btn-audio').disabled = false;
+            const fmt = (s) => isFinite(s) ? `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '--:--';
+            audio.addEventListener('loadedmetadata', () => { $('audio-time').textContent = `00:00 / ${fmt(audio.duration)}`; });
+            audio.addEventListener('timeupdate', () => {
+                $('audio-fill').style.width = `${(audio.currentTime / audio.duration) * 100 || 0}%`;
+                $('audio-time').textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
             });
+            audio.addEventListener('ended', () => setPlayIcon(false));
+        }
+        function setPlayIcon(playing) {
+            audioPlaying = playing;
+            $('btn-audio').querySelector('.icon-play').classList.toggle('hidden', playing);
+            $('btn-audio').querySelector('.icon-pause').classList.toggle('hidden', !playing);
+        }
+        $('btn-audio').addEventListener('click', () => {
+            if (!audio) return;
+            if (audioPlaying) { audio.pause(); setPlayIcon(false); }
+            else { audio.play(); setPlayIcon(true); }
+        });
+
+        /* ── Timer ── */
+        function startTimer() {
+            if (timerStarted) return;
+            timerStarted = true;
+            timerId = setInterval(() => {
+                seconds++;
+                statTime.textContent = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+            }, 1000);
+        }
+        function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+        /* ── Stats ── */
+        function refreshStats() {
+            const answered = results.filter(r => r !== null).length;
+            statProgress.textContent = `${answered}/4`;
+            statCorrect.textContent = results.filter(r => r === 'correct').length;
+            statMistakes.textContent = results.filter(r => r === 'wrong').length;
+            progressFill.style.width = `${(answered / QUESTIONS.length) * 100}%`;
         }
 
-        window.stopSlideAudio = stopPlayback;
+        /* ── Question rendering ── */
+        function renderQuestion() {
+            const q = QUESTIONS[current];
+            qText.textContent = q.text;
+            qCount.textContent = `${current + 1} of ${QUESTIONS.length}`;
+            ansBtns.forEach(btn => btn.classList.remove('is-correct', 'is-wrong', 'is-selected', 'is-locked'));
+            fb.className = 'bec-feedback'; fb.innerHTML = '&nbsp;';
+            const res = results[current];
+            ansBtns.forEach(btn => {
+                if (selections[current] === btn.dataset.value && !res) btn.classList.add('is-selected');
+            });
+            if (res) {
+                lockQuestion(res, true);
+            }
+            $('btn-prev').disabled = current === 0;
+            $('btn-next').textContent = current === QUESTIONS.length - 1 ? 'Finish' : 'Next Question';
+        }
 
-        // True/False ticking
-        document.querySelectorAll('.tf-item').forEach(item => {
-            item.querySelectorAll('.tf-cell').forEach(cell => {
-                cell.addEventListener('click', () => {
-                    const isTick = cell.classList.contains('is-ticked');
-                    item.querySelectorAll('.tf-cell').forEach(c => {
-                        c.classList.remove('is-ticked', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-500', 'border-rose-500', 'bg-rose-50', 'text-rose-500', 'dark:bg-emerald-500/15', 'dark:border-emerald-500/60', 'dark:bg-rose-500/15', 'dark:border-rose-500/60');
-                        c.classList.add('border-slate-200', 'text-transparent', 'dark:border-slate-600');
-                    });
-                    if (!isTick) {
-                        const isTrueCol = cell.getAttribute('aria-label').startsWith('True');
-                        cell.classList.remove('border-slate-200', 'text-transparent', 'dark:border-slate-600');
-                        if (isTrueCol) cell.classList.add('is-ticked', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-500', 'dark:bg-emerald-500/15', 'dark:border-emerald-500/60');
-                        else cell.classList.add('is-ticked', 'border-rose-500', 'bg-rose-50', 'text-rose-500', 'dark:bg-rose-500/15', 'dark:border-rose-500/60');
-                    }
-                });
+        function lockQuestion(res, silent) {
+            const q = QUESTIONS[current];
+            ansBtns.forEach(btn => {
+                const val = btn.dataset.value === 'true';
+                btn.classList.remove('is-selected');
+                btn.classList.add('is-locked');
+                if (val === q.answer) btn.classList.add('is-correct');
+                else if (selections[current] === btn.dataset.value && res === 'wrong') btn.classList.add('is-wrong');
+            });
+            if (!silent) {
+                if (res === 'correct') { fb.className = 'bec-feedback is-good'; fb.textContent = 'Correct! Well done.'; }
+                else if (res === 'wrong') { fb.className = 'bec-feedback is-bad'; fb.textContent = 'Not quite — the correct answer is highlighted.'; }
+                else { fb.className = 'bec-feedback is-info'; fb.textContent = 'Answer revealed.'; }
+            }
+        }
+
+        ansBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (results[current] !== null) return;
+                startTimer();
+                selections[current] = btn.dataset.value;
+                const val = btn.dataset.value === 'true';
+                results[current] = (val === QUESTIONS[current].answer) ? 'correct' : 'wrong';
+                lockQuestion(results[current], false);
+                refreshStats();
             });
         });
 
-        function playIn() {
-            const els = ['.header-section', '.script-card', '.tf-card'];
-            if (!window.gsap) {
-                els.forEach(sel => { const el = document.querySelector(sel); if (el) { el.style.opacity = '1'; el.style.transform = 'none'; } });
-                return;
+        $('btn-show').addEventListener('click', () => {
+            if (results[current] !== null) return;
+            startTimer();
+            results[current] = 'revealed';
+            lockQuestion('revealed', false);
+            refreshStats();
+        });
+
+        $('btn-hint').addEventListener('click', () => {
+            fb.className = 'bec-feedback is-info';
+            fb.textContent = QUESTIONS[current].hint;
+        });
+
+        $('btn-next').addEventListener('click', () => {
+            if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+            else {
+                const answered = results.filter(r => r !== null).length;
+                fb.className = 'bec-feedback is-info';
+                fb.textContent = answered === QUESTIONS.length
+                    ? `Finished — ${statCorrect.textContent} correct, ${statMistakes.textContent} mistake(s).`
+                    : `${QUESTIONS.length - answered} question(s) left — answer them all to finish.`;
             }
-            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-            tl.to('.header-section', { opacity: 1, duration: 0.7 })
-                .to('.script-card', { opacity: 1, y: -12, duration: 0.8, clearProps: 'transform' }, '-=0.35')
-                .to('.tf-card', { opacity: 1, y: -12, duration: 0.8, clearProps: 'transform' }, '-=0.6');
+        });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; renderQuestion(); } });
 
-            window.resetSlide = () => {
-                tl.pause(0);
-                gsap.set(els.join(','), { clearProps: 'all' });
-                tl.restart();
-                stopPlayback();
-            };
+        /* ── Script overlay (paginated, no scroll) ── */
+        let scriptPage = 0;
+        function renderScript() {
+            scriptBody.innerHTML = '';
+            SCRIPT[scriptPage].forEach(line => {
+                const p = document.createElement('p');
+                p.className = 'bec-script-line';
+                const sp = document.createElement('span');
+                sp.className = 'sp';
+                sp.textContent = line.slice(0, line.indexOf(':') + 1);
+                p.appendChild(sp);
+                p.appendChild(document.createTextNode(line.slice(line.indexOf(':') + 1)));
+                scriptBody.appendChild(p);
+            });
+            const head = document.createElement('div');
+            head.className = 'flex items-center gap-1';
+            head.innerHTML = `<span class="bec-script-num">${scriptPage + 1}</span><span style="font-size:0.7rem;font-weight:800;color:var(--bec-text-2)">Conversation ${scriptPage + 1} of 4</span>`;
+            scriptBody.prepend(head);
+            $('script-count').textContent = `${scriptPage + 1} / ${SCRIPT.length}`;
+            $('script-prev').disabled = scriptPage === 0;
+            $('script-next').disabled = scriptPage === SCRIPT.length - 1;
         }
+        $('btn-script').addEventListener('click', () => { renderScript(); overlay.classList.add('is-open'); });
+        $('script-close').addEventListener('click', () => overlay.classList.remove('is-open'));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+        $('script-prev').addEventListener('click', () => { if (scriptPage > 0) { scriptPage--; renderScript(); } });
+        $('script-next').addEventListener('click', () => { if (scriptPage < SCRIPT.length - 1) { scriptPage++; renderScript(); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.classList.remove('is-open'); });
 
-        playIn();
+        /* ── Reset (quiz + reader hook) ── */
+        function fullReset() {
+            current = 0;
+            results = [null, null, null, null];
+            selections = [null, null, null, null];
+            seconds = 0; timerStarted = false;
+            stopTimer();
+            statTime.textContent = '00:00';
+            if (audio) { audio.pause(); audio.currentTime = 0; setPlayIcon(false); }
+            overlay.classList.remove('is-open');
+            refreshStats();
+            renderQuestion();
+        }
+        $('btn-restart').addEventListener('click', fullReset);
+        window.resetSlide = fullReset;
+
+        window.stopSlideAudio = function stopSlideAudio() {
+            stopTimer();
+            if (audio) { audio.pause(); audio.currentTime = 0; setPlayIcon(false); }
+        };
+
+        /* ── Init ── */
+        setupAudio();
+        refreshStats();
+        renderQuestion();
+
+        /* Subtle entrance */
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            const tl = gsap.timeline();
+            tl.from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.09, ease: 'power2.out', clearProps: 'all' });
+        }
     });
 </script>
 </body>

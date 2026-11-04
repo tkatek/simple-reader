@@ -11,13 +11,7 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
-                    }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
         };
 
         (function applyInitialTheme() {
@@ -27,13 +21,11 @@
                     useDark = window.parent.document.documentElement.classList.contains('dark');
                 }
             } catch (e) {}
-
             if (!useDark) {
                 const saved = localStorage.getItem('theme-preference');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
-
             document.documentElement.classList.toggle('dark', useDark);
         })();
 
@@ -42,197 +34,162 @@
             document.documentElement.classList.toggle('dark', useDark);
             localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
         };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
     </script>
+    <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <style>
-        .option-btn {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .option-btn:not(.is-picked):hover {
-            border-color: #6366f1;
-            background-color: rgba(99, 102, 241, 0.06);
-            transform: translateY(-1px);
-        }
-        .option-btn.is-correct {
-            border-color: #10b981 !important;
-            background-color: rgba(16, 185, 129, 0.1) !important;
-            color: #059669 !important;
-        }
-        .option-btn.is-wrong {
-            border-color: #f43f5e !important;
-            background-color: rgba(244, 63, 94, 0.08) !important;
-            color: #e11d48 !important;
-        }
-        .dark .option-btn.is-correct { color: #34d399 !important; }
-        .dark .option-btn.is-wrong { color: #fb7185 !important; }
-        .quiz-card.is-locked .option-btn { pointer-events: none; }
-        @keyframes shakeX {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-        .shake { animation: shakeX 0.3s ease; }
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    </style>
 </head>
-<body class="h-full overflow-x-hidden">
-<div class="isolate relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50">
-    <div class="pointer-events-none fixed inset-0 z-0">
-        <div class="absolute -top-28 -left-28 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl dark:bg-indigo-500/25"></div>
-        <div class="absolute -bottom-36 -right-28 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-500/20"></div>
-        <div class="absolute left-1/2 top-[85%] -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:bg-emerald-500/15"></div>
-    </div>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
 
-    <div class="relative z-10">
-        <div class="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto">
-            <div class="mx-auto flex min-h-[100dvh] w-full max-w-[1100px] flex-col items-center justify-center gap-8 px-6 py-10 lg:px-10">
-                <!-- Header -->
-                <div class="header-section flex w-full flex-col items-center gap-5 text-center opacity-0 sm:flex-row sm:items-end sm:justify-between sm:text-left">
-                    <div>
-                        <span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 dark:border-indigo-800/50 dark:bg-indigo-900/30 dark:text-indigo-400">
-                            SLIDE 06 — CHECK UNDERSTANDING
-                        </span>
-                        <h1 class="mt-5 text-3xl font-black tracking-tight sm:text-4xl">Interactive <span class="bg-gradient-to-br from-indigo-600 to-blue-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-blue-300">video quiz</span></h1>
-                    </div>
-                    <div id="score-chip" class="flex items-center gap-2.5 rounded-2xl border border-slate-100 bg-white px-5 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Score</span>
-                        <span id="score-value" class="text-lg font-black text-indigo-600 dark:text-indigo-400">0 / 5</span>
-                    </div>
-                </div>
+    <div class="bec-stage">
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 06 · Check Understanding</span>
+            <h1 class="bec-title">Interactive <span class="accent">video quiz</span></h1>
+        </div>
 
-                <!-- Questions -->
-                <div class="quiz-grid grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
-                    <div class="quiz-card rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800" data-answer="B">
-                        <div class="mb-4 flex items-start gap-3">
-                            <span class="q-num flex h-8 w-8 min-w-8 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">1</span>
-                            <p class="pt-1 text-base font-black leading-snug tracking-tight">Why does the customer go to the bank?</p>
-                        </div>
-                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">A.</span> To open a new account</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">B.</span> To pay the electric bill</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">C.</span> To buy a new card</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">D.</span> To send a letter</button>
-                        </div>
-                    </div>
+        <div class="bec-statbar reveal">
+            <div class="bec-stat"><span class="bec-stat-label">Progress</span><span class="bec-stat-value" id="stat-progress">0/5</span></div>
+            <div class="bec-stat is-good"><span class="bec-stat-label">Correct</span><span class="bec-stat-value" id="stat-correct">0</span></div>
+            <div class="bec-stat is-bad"><span class="bec-stat-label">Mistakes</span><span class="bec-stat-value" id="stat-mistakes">0</span></div>
+        </div>
 
-                    <div class="quiz-card rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800" data-answer="B">
-                        <div class="mb-4 flex items-start gap-3">
-                            <span class="q-num flex h-8 w-8 min-w-8 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">2</span>
-                            <p class="pt-1 text-base font-black leading-snug tracking-tight">What does the teller ask the customer to show?</p>
-                        </div>
-                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">A.</span> A passport</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">B.</span> The bill</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">C.</span> A photo</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">D.</span> A phone</button>
-                        </div>
-                    </div>
+        <div class="bec-card bec-quiz reveal">
+            <div class="bec-quiz-top">
+                <p class="bec-quiz-instruction">Choose the correct answer:</p>
+                <span class="bec-qcount" id="q-count">1 of 5</span>
+            </div>
 
-                    <div class="quiz-card rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800" data-answer="A">
-                        <div class="mb-4 flex items-start gap-3">
-                            <span class="q-num flex h-8 w-8 min-w-8 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">3</span>
-                            <p class="pt-1 text-base font-black leading-snug tracking-tight">How much is the bill?</p>
-                        </div>
-                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">A.</span> 45.60 dollars</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">B.</span> 15 dollars</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">C.</span> 100 dollars</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">D.</span> 5.60 dollars</button>
-                        </div>
-                    </div>
+            <div class="bec-progress"><div class="bec-progress-fill" id="quiz-progress"></div></div>
 
-                    <div class="quiz-card rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] dark:border-slate-800 dark:bg-slate-800" data-answer="C">
-                        <div class="mb-4 flex items-start gap-3">
-                            <span class="q-num flex h-8 w-8 min-w-8 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">4</span>
-                            <p class="pt-1 text-base font-black leading-snug tracking-tight">How does the customer pay?</p>
-                        </div>
-                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">A.</span> By cash</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">B.</span> By check</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">C.</span> By card</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">D.</span> Online</button>
-                        </div>
-                    </div>
+            <p class="bec-question" id="q-text">Why does the customer go to the bank?</p>
 
-                    <div class="quiz-card rounded-[1.75rem] border border-slate-100 bg-white p-6 opacity-0 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.2)] lg:col-span-2 dark:border-slate-800 dark:bg-slate-800" data-answer="B">
-                        <div class="mb-4 flex items-start gap-3">
-                            <span class="q-num flex h-8 w-8 min-w-8 items-center justify-center rounded-xl bg-indigo-50 text-sm font-black text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">5</span>
-                            <p class="pt-1 text-base font-black leading-snug tracking-tight">What does the teller give at the end?</p>
-                        </div>
-                        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">A.</span> A new account</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">B.</span> A receipt</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">C.</span> A bill</button>
-                            <button class="option-btn flex items-center gap-2.5 rounded-xl border-2 border-slate-100 px-4 py-3 text-left text-sm font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300"><span class="opt-letter font-black text-slate-400">D.</span> A credit card</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="bec-answers" id="answers"></div>
+
+            <p class="bec-feedback" id="feedback">&nbsp;</p>
+
+            <div class="bec-quiznav">
+                <button class="bec-btn bec-btn-outline" id="btn-restart">Restart Quiz</button>
+                <button class="bec-btn bec-btn-outline" id="btn-prev">Previous Question</button>
+                <button class="bec-btn bec-btn-primary" id="btn-next">Next Question</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    const QUESTIONS = [
+        { q: "Why does the customer go to the bank?", opts: ["To open a new account", "To pay the electric bill", "To buy a new card", "To send a letter"], answer: 1 },
+        { q: "What does the teller ask the customer to show?", opts: ["A passport", "The bill", "A photo", "A phone"], answer: 1 },
+        { q: "How much is the bill?", opts: ["45.60 dollars", "15 dollars", "100 dollars", "5.60 dollars"], answer: 0 },
+        { q: "How does the customer pay?", opts: ["By cash", "By check", "By card", "Online"], answer: 2 },
+        { q: "What does the teller give at the end?", opts: ["A new account", "A receipt", "A bill", "A credit card"], answer: 1 }
+    ];
+    const LETTERS = ["A", "B", "C", "D"];
+
     document.addEventListener('DOMContentLoaded', () => {
-        const scoreValue = document.getElementById('score-value');
-        let score = 0;
+        const $ = (id) => document.getElementById(id);
+        const answersEl = $('answers'), qText = $('q-text'), qCount = $('q-count'), fb = $('feedback');
+        const statProgress = $('stat-progress'), statCorrect = $('stat-correct'), statMistakes = $('stat-mistakes');
+        const progressFill = $('quiz-progress');
 
-        document.querySelectorAll('.quiz-card').forEach(card => {
-            const correct = card.dataset.answer;
-            card.querySelectorAll('.option-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (card.classList.contains('is-locked')) return;
-                    const letter = btn.querySelector('.opt-letter').textContent.trim().charAt(0);
-                    if (letter === correct) {
-                        card.querySelectorAll('.option-btn').forEach(b => b.classList.remove('is-wrong', 'shake'));
-                        btn.classList.add('is-correct');
-                        card.classList.add('is-locked');
-                        const qNum = card.querySelector('.q-num');
-                        qNum.classList.remove('bg-indigo-50', 'text-indigo-600', 'dark:bg-indigo-500/15', 'dark:text-indigo-400');
-                        qNum.classList.add('bg-emerald-50', 'text-emerald-600', 'dark:bg-emerald-500/15', 'dark:text-emerald-400');
-                        score++;
-                        scoreValue.textContent = `${score} / 5`;
-                    } else {
-                        btn.classList.remove('is-wrong');
-                        void btn.offsetWidth;
-                        btn.classList.add('is-wrong', 'shake');
-                    }
-                });
-            });
-        });
+        let current = 0;
+        let results = Array(QUESTIONS.length).fill(null);
+        let selections = Array(QUESTIONS.length).fill(null);
+        let buttons = [];
 
-        function resetQuiz() {
-            score = 0;
-            scoreValue.textContent = '0 / 5';
-            document.querySelectorAll('.quiz-card').forEach(card => {
-                card.classList.remove('is-locked');
-                card.querySelectorAll('.option-btn').forEach(b => b.classList.remove('is-correct', 'is-wrong', 'shake'));
-                const qNum = card.querySelector('.q-num');
-                qNum.classList.add('bg-indigo-50', 'text-indigo-600', 'dark:bg-indigo-500/15', 'dark:text-indigo-400');
-                qNum.classList.remove('bg-emerald-50', 'text-emerald-600', 'dark:bg-emerald-500/15', 'dark:text-emerald-400');
+        function buildAnswers() {
+            answersEl.innerHTML = '';
+            buttons = [];
+            QUESTIONS[current].opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'bec-ans';
+                btn.innerHTML = `<span style="opacity:0.55;font-weight:900">${LETTERS[i]}.</span> ${opt}`;
+                btn.addEventListener('click', () => pick(i));
+                answersEl.appendChild(btn);
+                buttons.push(btn);
             });
         }
 
-        function playIn() {
-            const els = ['.header-section', '.quiz-card'];
-            if (!window.gsap) {
-                document.querySelectorAll(els.join(',')).forEach(el => { el.style.opacity = '1'; });
-                return;
+        function pick(i) {
+            if (results[current] !== null) return;
+            selections[current] = i;
+            results[current] = (i === QUESTIONS[current].answer) ? 'correct' : 'wrong';
+            renderAnswered(false);
+            refreshStats();
+        }
+
+        function renderAnswered(silent) {
+            const ans = QUESTIONS[current].answer;
+            buttons.forEach((btn, i) => {
+                btn.classList.remove('is-selected', 'is-correct', 'is-wrong', 'is-locked');
+                btn.classList.add('is-locked');
+                if (i === ans) btn.classList.add('is-correct');
+                else if (i === selections[current] && results[current] === 'wrong') btn.classList.add('is-wrong');
+            });
+            if (!silent) {
+                if (results[current] === 'correct') { fb.className = 'bec-feedback is-good'; fb.textContent = 'Correct! Well done.'; }
+                else { fb.className = 'bec-feedback is-bad'; fb.textContent = 'Not quite — the correct answer is highlighted.'; }
             }
-            const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-            tl.to('.header-section', { opacity: 1, duration: 0.7 })
-                .to('.quiz-card', { opacity: 1, y: -14, duration: 0.6, stagger: 0.12, clearProps: 'transform' }, '-=0.3');
-
-            window.resetSlide = () => {
-                tl.pause(0);
-                gsap.set(els.join(','), { clearProps: 'all' });
-                tl.restart();
-                resetQuiz();
-            };
         }
 
-        playIn();
+        function renderQuestion() {
+            const q = QUESTIONS[current];
+            qText.textContent = q.q;
+            qCount.textContent = `${current + 1} of ${QUESTIONS.length}`;
+            fb.className = 'bec-feedback'; fb.innerHTML = '&nbsp;';
+            buildAnswers();
+            if (results[current] !== null) renderAnswered(true);
+            else if (selections[current] !== null) buttons[selections[current]].classList.add('is-selected');
+            $('btn-prev').disabled = current === 0;
+            $('btn-next').textContent = current === QUESTIONS.length - 1 ? 'Finish' : 'Next Question';
+        }
+
+        function refreshStats() {
+            const answered = results.filter(r => r !== null).length;
+            statProgress.textContent = `${answered}/${QUESTIONS.length}`;
+            statCorrect.textContent = results.filter(r => r === 'correct').length;
+            statMistakes.textContent = results.filter(r => r === 'wrong').length;
+            progressFill.style.width = `${(answered / QUESTIONS.length) * 100}%`;
+        }
+
+        $('btn-next').addEventListener('click', () => {
+            if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+            else {
+                const answered = results.filter(r => r !== null).length;
+                fb.className = 'bec-feedback is-info';
+                fb.textContent = answered === QUESTIONS.length
+                    ? `Finished — ${statCorrect.textContent} correct, ${statMistakes.textContent} mistake(s).`
+                    : `${QUESTIONS.length - answered} question(s) left — answer them all to finish.`;
+            }
+        });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; renderQuestion(); } });
+
+        function fullReset() {
+            current = 0;
+            results = Array(QUESTIONS.length).fill(null);
+            selections = Array(QUESTIONS.length).fill(null);
+            refreshStats();
+            renderQuestion();
+        }
+        $('btn-restart').addEventListener('click', fullReset);
+        window.resetSlide = fullReset;
+
+        refreshStats();
+        renderQuestion();
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.09, ease: 'power2.out', clearProps: 'all' });
+        }
     });
 </script>
 </body>
