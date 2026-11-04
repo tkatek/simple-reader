@@ -99,7 +99,19 @@
                 <button class="bec-btn bec-btn-soft" id="btn-answers">Answer Key</button>
             </div>
             <p class="bec-feedback" id="feedback">&nbsp;</p>
-            <div id="answers-card" style="display:none;background:var(--bec-good-soft);border:1px solid var(--bec-border);border-radius:1rem;padding:0.6rem 0.9rem">
+        </div>
+    </div>
+
+    <!-- Answer key overlay -->
+    <div class="bec-overlay" id="answers-overlay">
+        <div class="bec-card bec-modal">
+            <div class="bec-modal-head">
+                <h2 class="bec-modal-title">Answer key</h2>
+                <button class="bec-modal-close" id="answers-close" aria-label="Close answer key">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="bec-modal-body" style="justify-content:flex-start">
                 <div class="answers-grid">
                     <p>(1) new account</p><p>(2) ID card</p><p>(3) form</p>
                     <p>(4) signature</p><p>(5) deposit</p><p>(6) cash</p>
@@ -172,12 +184,11 @@
         });
 
         $('btn-reset').addEventListener('click', fullReset);
-        $('btn-answers').addEventListener('click', () => {
-            const card = $('answers-card');
-            const open = card.style.display === 'none';
-            card.style.display = open ? 'block' : 'none';
-            $('btn-answers').textContent = open ? 'Hide Answer Key' : 'Answer Key';
-        });
+        const answersOverlay = $('answers-overlay');
+        $('btn-answers').addEventListener('click', () => answersOverlay.classList.add('is-open'));
+        $('answers-close').addEventListener('click', () => answersOverlay.classList.remove('is-open'));
+        answersOverlay.addEventListener('click', (e) => { if (e.target === answersOverlay) answersOverlay.classList.remove('is-open'); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') answersOverlay.classList.remove('is-open'); });
 
         function fullReset() {
             selected = null;
@@ -189,8 +200,7 @@
             });
             $('feedback').className = 'bec-feedback';
             $('feedback').innerHTML = '&nbsp;';
-            $('answers-card').style.display = 'none';
-            $('btn-answers').textContent = 'Answer Key';
+            answersOverlay.classList.remove('is-open');
         }
         window.resetSlide = fullReset;
 

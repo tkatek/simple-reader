@@ -45,37 +45,204 @@
     </script>
     <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        /* Cover hero — the platform's intro-slide pattern: unit pill + plain unit
+           name, ghost lesson pill, huge two-tone title, idiom card, Start Session
+           pill with a circular arrow badge, and a framed rounded-square photo. */
+        .cover-grid {
+            display: grid;
+            grid-template-columns: 1.08fr 0.92fr;
+            align-items: center;
+            gap: clamp(1.2rem, 3.5vw, 3rem);
+            width: min(1060px, 100%);
+            max-height: 100%;
+        }
+        @media (max-width: 760px) {
+            .cover-grid { grid-template-columns: 1fr; gap: clamp(0.7rem, 2vh, 1.2rem); }
+            .cover-photo { max-width: min(280px, 58vw); margin: 0 auto; }
+        }
+
+        .cover-unitsolid {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 0.45rem;
+            background: linear-gradient(100deg, #4f46e5, #6366f1);
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            font-size: clamp(0.6rem, 1.3vh, 0.75rem);
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            box-shadow: 0 8px 16px -8px rgba(79, 70, 229, 0.55);
+        }
+        .cover-unitname {
+            font-size: clamp(0.85rem, 1.9vh, 1.1rem);
+            font-weight: 800;
+            color: var(--bec-text);
+            letter-spacing: -0.01em;
+        }
+        .cover-unitdot { width: 0.35rem; height: 0.35rem; border-radius: 9999px; background: var(--bec-brand); flex: none; }
+        .cover-ghostpill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 0.45rem;
+            border: 1px solid var(--bec-border);
+            background: var(--bec-surface);
+            color: var(--bec-text);
+            padding: 0.26rem 0.75rem;
+            font-size: clamp(0.56rem, 1.2vh, 0.7rem);
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px -6px rgba(15, 23, 42, 0.2);
+        }
+
+        .cover-title {
+            margin-top: clamp(0.5rem, 1.6vh, 1rem);
+            font-size: clamp(2.4rem, 8.2vh, 4.9rem);
+            font-weight: 900;
+            letter-spacing: -0.035em;
+            line-height: 1.02;
+            color: var(--bec-text);
+        }
+        .cover-title .accent {
+            background: linear-gradient(100deg, #4f46e5, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .idiom-card {
+            position: relative;
+            margin-top: clamp(0.6rem, 2vh, 1.2rem);
+            width: min(430px, 100%);
+            padding: calc(clamp(0.75rem, 2.2vh, 1.15rem) + 0.18rem) clamp(0.9rem, 2.4vh, 1.3rem) clamp(0.75rem, 2.2vh, 1.15rem);
+        }
+        /* Optical lift so the text block centers against the square photo card */
+        .cover-text { transform: translateY(-0.8vh); }
+        .idiom-chip {
+            position: absolute;
+            top: -0.62rem;
+            left: clamp(0.9rem, 2.4vh, 1.3rem);
+            background: var(--bec-brand);
+            color: #fff;
+            border-radius: 9999px;
+            padding: 0.16rem 0.8rem;
+            font-size: clamp(0.52rem, 1.05vh, 0.64rem);
+            font-weight: 900;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            box-shadow: 0 8px 16px -8px rgba(79, 70, 229, 0.6);
+        }
+
+        .start-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: clamp(0.7rem, 1.8vw, 1.05rem);
+            margin-top: clamp(0.7rem, 2.2vh, 1.35rem);
+            border: none;
+            cursor: pointer;
+            border-radius: 9999px;
+            background: linear-gradient(100deg, #4f46e5, #6366f1);
+            color: #fff;
+            padding: 0.42rem 0.42rem 0.42rem 1.5rem;
+            font-family: inherit;
+            font-size: clamp(0.8rem, 1.8vh, 1rem);
+            font-weight: 800;
+            box-shadow: 0 14px 28px -10px rgba(79, 70, 229, 0.55);
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        .start-btn:hover { filter: brightness(1.07); transform: translateY(-2px); }
+        .start-btn:active { transform: scale(0.97); }
+        .start-btn .arrow-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(1.9rem, 4.4vh, 2.4rem);
+            height: clamp(1.9rem, 4.4vh, 2.4rem);
+            border-radius: 9999px;
+            background: #fff;
+            color: #4f46e5;
+            transition: transform 0.25s ease;
+        }
+        .start-btn:hover .arrow-badge { transform: translateX(3px); }
+
+        /* Framed photo card: white inner ring + soft brand glow, like the reference */
+        .cover-photo {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: clamp(1.4rem, 3.5vw, 2rem);
+            background: var(--bec-surface);
+            padding: clamp(0.5rem, 1.4vw, 0.75rem);
+            box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.14), 0 30px 60px -25px rgba(15, 23, 42, 0.35);
+        }
+        .cover-photo-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: calc(clamp(1.4rem, 3.5vw, 2rem) - 0.45rem);
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body class="h-full overflow-hidden">
 <div class="bec-slide">
     <div class="bec-glow"></div>
 
-    <div class="bec-stage" style="gap: clamp(0.8rem, 2.2vh, 1.6rem)">
-        <!-- Unit badges -->
-        <div class="reveal" style="display:flex;flex-wrap:wrap;justify-content:center;gap:0.45rem">
-            <span class="bec-kicker">A1. Beginner</span>
-            <span class="bec-kicker">Unit.4</span>
-            <span class="bec-kicker">Home and Daily Needs</span>
-        </div>
+    <div class="bec-stage">
+        <div class="cover-grid">
+            <!-- Text column -->
+            <div class="cover-text" style="min-width:0">
+                <!-- Unit row: solid pill + plain unit name -->
+                <div class="reveal" style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
+                    <span class="cover-unitsolid">Unit 4</span>
+                    <span class="cover-unitdot"></span>
+                    <span class="cover-unitname">Home and Daily Needs</span>
+                </div>
 
-        <!-- Lesson title -->
-        <div class="bec-header reveal">
-            <span class="bec-kicker" style="background:transparent;border-color:transparent;letter-spacing:0.3em;color:var(--bec-text-2)">Lesson.3</span>
-            <h1 class="bec-title" style="font-size:clamp(2.2rem,7.5vh,4.6rem)">Paying <span class="accent">Bills</span></h1>
-        </div>
+                <!-- Lesson + level pills -->
+                <div class="reveal" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-top:0.55rem">
+                    <span class="cover-ghostpill">Lesson 3</span>
+                    <span class="cover-ghostpill">A1. Beginner</span>
+                </div>
 
-        <!-- Idiom of the lesson -->
-        <div class="bec-card reveal" style="width:min(560px,100%);padding:clamp(0.8rem,2.4vh,1.4rem);text-align:center;position:relative">
-            <span style="position:absolute;top:-0.65rem;left:50%;transform:translateX(-50%);background:var(--bec-brand);color:#fff;border-radius:9999px;padding:0.18rem 0.85rem;font-size:clamp(0.55rem,1.1vh,0.66rem);font-weight:900;letter-spacing:0.2em;text-transform:uppercase;box-shadow:0 8px 16px -8px rgba(79,70,229,0.6)">Idiom of the lesson</span>
-            <p style="font-size:clamp(1rem,2.7vh,1.6rem);font-weight:900;letter-spacing:-0.01em;line-height:1.3">“Cut your coat according to your cloth”</p>
-            <p style="margin-top:0.4rem;font-size:clamp(0.7rem,1.5vh,0.9rem);font-weight:600;color:var(--bec-text-2)">Live in a way that matches what you can afford.</p>
-        </div>
+                <!-- Title -->
+                <h1 class="cover-title reveal">Paying <span class="accent">Bills</span></h1>
 
-        <!-- Start action -->
-        <button class="bec-btn bec-btn-primary reveal" id="btn-start" style="padding:0.75rem 2.1rem;font-size:clamp(0.75rem,1.6vh,0.92rem)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-            Start Lesson
-        </button>
+                <!-- Idiom of the lesson -->
+                <div class="bec-card idiom-card reveal">
+                    <span class="idiom-chip">Idiom of the lesson</span>
+                    <p style="font-size:clamp(0.95rem,2.3vh,1.35rem);font-weight:900;letter-spacing:-0.01em;line-height:1.3">“Cut your coat according to your cloth”</p>
+                    <p style="margin-top:0.35rem;font-size:clamp(0.66rem,1.45vh,0.85rem);font-weight:600;color:var(--bec-text-2);line-height:1.45">Live in a way that matches what you can afford.</p>
+                </div>
+
+                <!-- Start Session -->
+                <button class="start-btn reveal" id="btn-start">
+                    <span>Start Session</span>
+                    <span class="arrow-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Photo column: framed rounded-square card with EMPTY placeholder
+                 ═══ TECH LEAD — IMAGE INTEGRATION ═══
+                 Drop the hosted photo inside .cover-photo-inner, e.g.
+                 <img src="https://<your-host>/img/paying-bills-cover.png"
+                      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"
+                      alt="Paying a bill on a smartphone">
+                 The dashed placeholder below is removed once the photo exists. -->
+            <div class="cover-photo reveal">
+                <div class="cover-photo-inner">
+                    <div class="bec-imgslot" style="border:none;border-radius:inherit;height:100%;gap:0.45rem">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+                        <p class="t1">Photo placeholder</p>
+                        <p class="t2">Paying a bill on a smartphone</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -101,7 +268,7 @@
         const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (window.gsap && !reduced) {
             gsap.timeline()
-                .from('.bec-stage > .reveal', { opacity: 0, y: 12, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
+                .from('.reveal', { opacity: 0, y: 12, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
         }
     });
 </script>
