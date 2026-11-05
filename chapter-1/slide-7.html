@@ -46,115 +46,300 @@
     <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        .read-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.6rem, 1.6vw, 1.1rem); align-items: stretch; width: min(950px, 100%); max-height: 100%; }
-        .read-questions { display: flex; flex-direction: column; gap: clamp(0.4rem, 1.2vh, 0.75rem); padding: clamp(0.7rem, 2vh, 1.2rem); min-height: 0; }
-        .q-list { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-evenly; gap: clamp(0.3rem, 1vh, 0.6rem); }
-        .bill-only-btn { display: none; }
-        @media (max-width: 820px) {
-            .read-grid { grid-template-columns: 1fr; }
-            .bill-panel { display: none; }
-            .bill-only-btn { display: inline-flex; }
+        /* ── Slide 7 · Reading Comprehension — MY CABLE TV BILL ───────────
+           Fixed 1280×720 reader canvas; the reader scales it visually.
+           Layout is px-true to the approved reference design. */
+        .s7-slide {
+            --s7-bg: #ffffff;
+            --s7-surface: #ffffff;
+            --s7-border: #e9ecf6;
+            --s7-shadow: 0 20px 45px -20px rgba(30, 34, 80, 0.22);
+            --s7-text: #05051a;
+            --s7-label: #4a5478;
+            --s7-title-indigo: #150a80;
+            --s7-title-blue: #0b52fd;
+            --s7-lav: #e4e0fc;
+            --s7-num: #1a0d87;
+            --s7-sep: #d6d1f8;
+            --s7-icon: #27178b;
+            --s7-divider: #230dc0;
+            --s7-thanks: #3a4470;
+            --s7-unit: #4a38fa;
+            --s7-unit-border: #7c68f8;
+            --s7-kicker: #1a1c38;
+            --s7-home: #0a0a20;
+
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100dvh;
+            width: 100%;
+            overflow: hidden;
+            background: var(--s7-bg);
+            color: var(--s7-text);
+            font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+        }
+        .dark .s7-slide {
+            --s7-bg: #0f172a;
+            --s7-surface: #1e293b;
+            --s7-border: #334155;
+            --s7-shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.55);
+            --s7-text: #f1f5f9;
+            --s7-label: #94a3b8;
+            --s7-title-indigo: #a5b4fc;
+            --s7-title-blue: #60a5fa;
+            --s7-lav: rgba(99, 102, 241, 0.22);
+            --s7-num: #a5b4fc;
+            --s7-sep: rgba(148, 163, 184, 0.3);
+            --s7-icon: #312e81;
+            --s7-divider: #6366f1;
+            --s7-thanks: #94a3b8;
+            --s7-unit: #a5b4fc;
+            --s7-unit-border: #6366f1;
+            --s7-kicker: #94a3b8;
+            --s7-home: #f1f5f9;
+        }
+
+        .s7-inner { width: 1145px; max-width: calc(100% - 36px); padding-top: 30px; }
+
+        /* Top course information */
+        .s7-kicker {
+            text-align: center;
+            font-size: 15px;
+            line-height: 1;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            color: var(--s7-kicker);
+        }
+        .s7-unitrow { margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 34px; }
+        .s7-unit {
+            display: inline-flex;
+            align-items: center;
+            height: 25px;
+            padding: 0 10px;
+            border: 1.5px solid var(--s7-unit-border);
+            border-radius: 9999px;
+            font-size: 18.5px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: var(--s7-unit);
+            background: var(--s7-surface);
+        }
+        .s7-unitname { font-size: 25.5px; line-height: 1.44; font-weight: 800; letter-spacing: 0; color: var(--s7-home); }
+        .s7-lesson {
+            margin: 6px auto 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            width: 154px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #5642fb, #4832fb);
+            color: #fff;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+        }
+
+        /* Title */
+        .s7-title {
+            margin-top: 23px;
+            text-align: center;
+            font-size: 40px;
+            line-height: 1.05;
+            font-weight: 900;
+            letter-spacing: 0.055em;
+            color: var(--s7-title-indigo);
+        }
+        .s7-title .s7-accent { color: var(--s7-title-blue); }
+
+        /* Two exercise cards */
+        .s7-grid {
+            margin-top: 39px;
+            display: grid;
+            grid-template-columns: 535fr 585fr;
+            gap: 25px;
+            align-items: stretch;
+        }
+        .s7-card {
+            background: var(--s7-surface);
+            border: 1px solid var(--s7-border);
+            border-radius: 20px;
+            box-shadow: var(--s7-shadow);
+        }
+
+        /* Left card — cable bill */
+        .s7-bill { padding: 20px; display: flex; flex-direction: column; }
+        .s7-bill-head { display: flex; align-items: center; gap: 18px; }
+        .s7-bill-icon {
+            flex: 0 0 auto;
+            width: 57px;
+            height: 52px;
+            border-radius: 12px;
+            background: var(--s7-icon);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .s7-bill-name { font-size: 24px; line-height: 1.2; font-weight: 800; letter-spacing: 0.03em; color: var(--s7-title-indigo); text-transform: uppercase; }
+        .s7-bill-sub { margin-top: 6px; font-size: 13.5px; line-height: 1; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; color: var(--s7-label); }
+        .s7-bill-rule { margin-top: 11.5px; height: 2px; border-radius: 1px; background: var(--s7-divider); }
+        .s7-bill-rows { margin-top: 20.5px; }
+        .s7-bill-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 15.2px;
+            font-size: 17px;
+            line-height: 1;
+        }
+        .s7-bill-row:last-child { margin-bottom: 0; }
+        .s7-bill-row span { font-weight: 600; letter-spacing: 0.01em; color: var(--s7-label); }
+        .s7-bill-row strong { font-weight: 800; font-size: 18px; letter-spacing: 0.02em; color: var(--s7-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .s7-total {
+            margin-top: 21px;
+            height: 49px;
+            border-radius: 11px;
+            background: linear-gradient(90deg, #5743fa, #4e36fb);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2px 0 8px;
+            box-shadow: 0 14px 30px -14px rgba(80, 57, 250, 0.55);
+        }
+        .s7-total-label { font-size: 19px; line-height: 1; font-weight: 800; letter-spacing: 0.22em; }
+        .s7-total-amount { font-size: 33px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+        .s7-thanks {
+            margin-top: 18.5px;
+            text-align: center;
+            font-size: 13px;
+            line-height: 1;
+            font-weight: 800;
+            letter-spacing: 0.45em;
+            text-indent: 0.45em;
+            text-transform: uppercase;
+            color: var(--s7-thanks);
+        }
+
+        /* Right card — questions */
+        .s7-quiz { padding: 24px 23px; display: flex; flex-direction: column; }
+        .s7-instruction { font-size: 21.5px; line-height: 1.4; font-weight: 800; letter-spacing: 0.01em; color: var(--s7-text); }
+        .s7-qlist { margin-top: 19.5px; display: flex; flex-direction: column; flex: 1 1 auto; }
+        .s7-qrow { display: flex; align-items: center; gap: 23px; }
+        .s7-qnum {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 40px;
+            border-radius: 11px;
+            background: var(--s7-lav);
+            color: var(--s7-num);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 800;
+        }
+        .s7-qtext { font-size: 18px; font-weight: 700; letter-spacing: 0.02em; line-height: 1.35; color: var(--s7-text); }
+        .s7-qsep { margin: 11.5px 0 13.5px; border-top: 2px dashed var(--s7-sep); }
+        .s7-qrow.last { margin-bottom: 0; }
+
+        /* Narrow standalone viewing (the reader canvas itself is fixed 1280px) */
+        @media (max-width: 940px) {
+            html, body.h-full { height: auto; }
+            body.overflow-hidden { overflow: auto; }
+            .s7-slide { height: auto; min-height: 100dvh; overflow: visible; }
+            .s7-grid { grid-template-columns: 1fr; gap: 18px; }
+            .s7-unitrow { gap: 16px; flex-wrap: wrap; }
+            .s7-unitname { font-size: 20px; }
+            .s7-title { font-size: 26px; letter-spacing: 0.02em; }
+            .s7-inner { padding-top: 18px; padding-bottom: 26px; }
         }
     </style>
 </head>
 <body class="h-full overflow-hidden">
-<div class="bec-slide">
-    <div class="bec-glow"></div>
+<div class="s7-slide">
+    <div class="s7-inner">
 
-    <div class="bec-stage" style="gap: clamp(0.55rem, 1.6vh, 1rem)">
-        <div class="bec-header reveal">
-            <span class="bec-kicker">Slide 07 · Reading</span>
-            <h1 class="bec-title" style="font-size:clamp(1.3rem,3.2vh,2.3rem)">Reading Comprehension — <span class="accent">MY CABLE TV BILL</span></h1>
+        <p class="s7-kicker reveal">A1 · BEGINNER</p>
+
+        <div class="s7-unitrow reveal">
+            <span class="s7-unit">UNIT 4</span>
+            <span class="s7-unitname">Home and Daily Needs</span>
         </div>
 
-        <div class="read-grid">
+        <div class="s7-lesson reveal">LESSON 3</div>
+
+        <h1 class="s7-title reveal">Reading Comprehension — <span class="s7-accent">MY CABLE TV BILL</span></h1>
+
+        <div class="s7-grid">
             <!-- The bill document (recreated from the lesson worksheet) -->
-            <div class="bec-card bec-doc bill-panel reveal">
-                <div class="bec-doc-head">
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:0.6rem;background:var(--bec-text);color:var(--bec-surface)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <div class="s7-card s7-bill reveal">
+                <div class="s7-bill-head">
+                    <span class="s7-bill-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
                     </span>
                     <div>
-                        <p class="bec-doc-title">ESL Cable TV Service</p>
-                        <p style="font-size:clamp(0.55rem,1.1vh,0.66rem);font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--bec-text-2)">Monthly Statement</p>
+                        <p class="s7-bill-name">ESL Cable TV Service</p>
+                        <p class="s7-bill-sub">Monthly Statement</p>
                     </div>
                 </div>
-                <div style="padding-top:0.55rem">
-                    <div class="bec-doc-row"><span>Account Number</span><strong>56789-123-8</strong></div>
-                    <div class="bec-doc-row"><span>Billing Period</span><strong>01/01/03 - 01/31/03</strong></div>
-                    <div class="bec-doc-row"><span>Due Date</span><strong>01/03/03</strong></div>
-                    <div class="bec-doc-row"><span>Monthly Service Charge</span><strong>$44.80</strong></div>
-                    <div class="bec-doc-row"><span>Taxes</span><strong>$2.58</strong></div>
-                    <div class="bec-doc-total"><span style="font-size:0.72em;font-weight:900;letter-spacing:0.15em;text-transform:uppercase">Total Due</span><strong style="font-size:clamp(0.9rem,2vh,1.15rem)">$47.38</strong></div>
-                    <p style="margin-top:0.5rem;text-align:center;font-size:clamp(0.6rem,1.2vh,0.75rem);font-weight:900;letter-spacing:0.3em;text-transform:uppercase;color:var(--bec-text-2)">Thank You</p>
+                <div class="s7-bill-rule"></div>
+                <div class="s7-bill-rows">
+                    <div class="s7-bill-row"><span>Account Number</span><strong>56789-123-8</strong></div>
+                    <div class="s7-bill-row"><span>Billing Period</span><strong>01/01/03 – 01/31/03</strong></div>
+                    <div class="s7-bill-row"><span>Due Date</span><strong>01/03/03</strong></div>
+                    <div class="s7-bill-row"><span>Monthly Service Charge</span><strong>$44.80</strong></div>
+                    <div class="s7-bill-row"><span>Taxes</span><strong>$2.58</strong></div>
                 </div>
+                <div class="s7-total">
+                    <span class="s7-total-label">TOTAL DUE</span>
+                    <span class="s7-total-amount">$47.38</span>
+                </div>
+                <p class="s7-thanks">Thank You</p>
             </div>
 
             <!-- Questions -->
-            <div class="bec-card read-questions reveal">
-                <div class="flex items-center justify-between gap-2 flex-wrap">
-                    <p class="bec-quiz-instruction">Read this bill and answer the questions:</p>
-                    <button class="bec-btn bec-btn-soft bill-only-btn" id="btn-bill">View Bill</button>
-                </div>
-                <div class="q-list">
-                    <div class="bec-qrow">
-                        <span class="bec-qrow-num">1</span>
-                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">What service is this bill for?</p><div class="bec-ansline"></div></div>
+            <div class="s7-card s7-quiz reveal">
+                <p class="s7-instruction">Read this bill and answer the questions:</p>
+                <div class="s7-qlist">
+                    <div class="s7-qrow">
+                        <span class="s7-qnum">1</span>
+                        <p class="s7-qtext">What service is this bill for?</p>
                     </div>
-                    <div class="bec-qrow">
-                        <span class="bec-qrow-num">2</span>
-                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">What month of the year is the billing period?</p><div class="bec-ansline"></div></div>
+                    <div class="s7-qsep"></div>
+                    <div class="s7-qrow">
+                        <span class="s7-qnum">2</span>
+                        <p class="s7-qtext">What month of the year is the billing period?</p>
                     </div>
-                    <div class="bec-qrow">
-                        <span class="bec-qrow-num">3</span>
-                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">When is this bill due?</p><div class="bec-ansline"></div></div>
+                    <div class="s7-qsep"></div>
+                    <div class="s7-qrow">
+                        <span class="s7-qnum">3</span>
+                        <p class="s7-qtext">When is the bill due?</p>
                     </div>
-                    <div class="bec-qrow">
-                        <span class="bec-qrow-num">4</span>
-                        <div style="flex:1;min-width:0"><p class="bec-qrow-text">What is the account number?</p><div class="bec-ansline"></div></div>
+                    <div class="s7-qsep"></div>
+                    <div class="s7-qrow last">
+                        <span class="s7-qnum">4</span>
+                        <p class="s7-qtext">What is the account number?</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- View Bill overlay (small screens) -->
-    <div class="bec-overlay" id="bill-overlay">
-        <div class="bec-card bec-modal">
-            <div class="bec-modal-head">
-                <h2 class="bec-modal-title">MY CABLE TV BILL</h2>
-                <button class="bec-modal-close" id="bill-close" aria-label="Close bill">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div class="bec-modal-body" id="bill-modal-body"></div>
-        </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const billPanel = document.querySelector('.bill-panel');
-        const overlay = document.getElementById('bill-overlay');
-        const modalBody = document.getElementById('bill-modal-body');
-
-        document.getElementById('btn-bill').addEventListener('click', () => {
-            modalBody.innerHTML = '';
-            const clone = billPanel.cloneNode(true);
-            clone.classList.remove('bill-panel');
-            clone.style.display = '';
-            modalBody.appendChild(clone);
-            overlay.classList.add('is-open');
-        });
-        document.getElementById('bill-close').addEventListener('click', () => overlay.classList.remove('is-open'));
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.classList.remove('is-open'); });
-
-        window.resetSlide = function resetSlide() { overlay.classList.remove('is-open'); };
+        window.resetSlide = function resetSlide() {};
 
         const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (window.gsap && !reduced) {
-            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.08, ease: 'power2.out', clearProps: 'all' });
         }
     });
 </script>

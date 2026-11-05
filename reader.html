@@ -140,9 +140,7 @@
         .slide-container {
             height: calc(100dvh - 140px);
             position: relative;
-            /*overflow: hidden;*/
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden;
             background: var(--bg-body);
         }
 
@@ -150,8 +148,7 @@
             position: absolute;
             inset: 0;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: auto;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
@@ -230,15 +227,28 @@
             background: var(--text-secondary);
         }
 
-        iframe {
-            width: 100%;
-            height: 100%;
+        /* Fixed 16:9 slide canvas, scaled to fit the viewing area */
+        .slide-scaler {
+            flex: none;
+            position: relative;
+            overflow: hidden; /* the iframe's untransformed 1280x720 layout box must not create phantom scrollbars */
+            margin: auto; /* centers when smaller, stays scroll-reachable when larger */
+        }
+
+        .slide-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1280px;
+            height: 720px;
             border: none;
             background: var(--bg-card);
             pointer-events: none;
+            transform-origin: top left;
+            display: block;
         }
 
-        .slide.active iframe {
+        .slide.active .slide-canvas {
             pointer-events: auto;
         }
 
@@ -590,10 +600,9 @@
             <div id="slides-wrapper" class="w-full h-full relative">
                 <template id="slide-template">
                     <div class="slide">
-                        <div class="w-full h-full flex items-center justify-center">
-                            <!-- Iframe src will be set via JS -->
-                            <iframe src="" scrolling="yes" style="overflow: auto;"></iframe>
-
+                        <!-- Fixed 1280x720 design canvas; sized & scaled to fit via JS -->
+                        <div class="slide-scaler">
+                            <iframe class="slide-canvas" src="" scrolling="no"></iframe>
                         </div>
                     </div>
                 </template>
@@ -683,7 +692,7 @@
         {
             title: "Paying Bills",
             src: "chapter-1/slide-1.html",
-            cue: ["Present the topic and discuss the idiom which means: Live in a way that matches what you can afford."]
+            cue: ["Present the topic and discuss the idiom: “Cut your coat according to your cloth” — Live in a way that matches what you can afford."]
         },
         {
             title: "Quick Revision — Listen and Tick",
@@ -728,7 +737,8 @@
         {
             title: "New Vocabulary",
             src: "chapter-1/slide-10.html",
-            cue: []
+            cue: [],
+            scroll: true // 12-card gallery intentionally spans a scrolling page
         },
         {
             title: "Vocabulary Quiz",
@@ -794,10 +804,47 @@
         createSlides();
         createSidebar();
         updateSlides();
+        applyScale();
+
+        const wrapper = document.getElementById('slides-wrapper');
+        new ResizeObserver(applyScale).observe(wrapper);
+        window.addEventListener('resize', applyScale);
+        // Fallback for hosts that relayout without firing resize
+        // notifications (some embedded webviews): re-fit on box change.
+        let lastW = 0, lastH = 0;
+        setInterval(() => {
+            const b = wrapper.getBoundingClientRect();
+            if (b.width !== lastW || b.height !== lastH) {
+                lastW = b.width;
+                lastH = b.height;
+                applyScale();
+            }
+        }, 400);
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
             if (e.key === 'ArrowLeft') prevSlide();
+        });
+    }
+
+    // --- SLIDE SCALING (fixed 16:9 design canvas, fit to view) ---
+    const DESIGN_W = 1280;
+    const DESIGN_H = 720;
+
+    function currentFitScale() {
+        const box = document.getElementById('slides-wrapper').getBoundingClientRect();
+        if (!box.width || !box.height) return 1;
+        return Math.min(box.width / DESIGN_W, box.height / DESIGN_H);
+    }
+
+    function applyScale() {
+        const scale = currentFitScale() * state.zoom;
+        document.querySelectorAll('.slide-scaler').forEach(el => {
+            el.style.width = `${DESIGN_W * scale}px`;
+            el.style.height = `${DESIGN_H * scale}px`;
+        });
+        document.querySelectorAll('.slide-canvas').forEach(el => {
+            el.style.transform = `scale(${scale})`;
         });
     }
 
@@ -809,6 +856,9 @@
             const clone = template.content.cloneNode(true);
             const slide = clone.querySelector('.slide');
             const iframe = slide.querySelector('iframe');
+            // Slides marked scroll:true keep internal scrolling (their content
+            // intentionally exceeds one 16:9 canvas); all others are fixed.
+            if (data.scroll) iframe.setAttribute('scrolling', 'yes');
             // iframe.src = data.src; we will load it using ajax
 
             // Sync theme when iframe loads
@@ -878,6 +928,7 @@
         }
     }
     function updateSlides() {
+        applyScale(); // re-fit in case the view area changed since last paint
         state.slides.forEach((s, i) => {
             // 1. Handle CSS Transitions
             s.classList.toggle('active', i === state.currentSlide);
@@ -964,7 +1015,7 @@
 
     function changeZoom(delta) {
         state.zoom = Math.min(Math.max(0.5, state.zoom + delta), 2.0);
-        document.getElementById('zoom-wrapper').style.transform = `scale(${state.zoom})`;
+        applyScale();
         document.getElementById('zoom-level').textContent = `${Math.round(state.zoom * 100)}%`;
     }
 

@@ -46,167 +46,739 @@
     <link rel="stylesheet" href="bec.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        .fill-card { display: flex; flex-direction: column; gap: clamp(0.5rem, 1.4vh, 0.9rem); width: min(760px, 100%); padding: clamp(0.8rem, 2.2vh, 1.4rem); }
-        .fill-story { font-size: clamp(0.72rem, 1.75vh, 1rem); font-weight: 600; line-height: 2.15; color: var(--bec-text); text-align: left; }
-        .answers-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.2rem 1.2rem; font-size: clamp(0.62rem, 1.3vh, 0.78rem); font-weight: 800; color: var(--bec-text); }
-        @media (max-width: 560px) { .answers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        /* ── Drag-and-drop fill-in exercise (BEC exercise family) ─────── */
+        .bec-slide {
+            --dd-title-a: #3730a3;
+            --dd-title-b: #3b82f6;
+            --dd-accent: #4f46e5;
+            --dd-accent-deep: #7c3aed;
+            --dd-chip-bg: #ffffff;
+            --dd-chip-border: #e0e7ff;
+            --dd-chip-border-hover: #c7d2fe;
+            --dd-chip-text: #4f46e5;
+            --dd-chip-hover-bg: #f5f3ff;
+            --dd-chip-sel-bg: #eef2ff;
+            --dd-chip-sel-border: #a5b4fc;
+            --dd-blank-bg: #f8faff;
+            --dd-blank-border: #c7d2fe;
+            --dd-blank-border-hover: #a5b4fc;
+            --dd-blank-num: #94a3b8;
+            --dd-blank-filled-bg: #eef2ff;
+            --dd-ico-time-bg: #f5f3ff;
+            --dd-ico-time: #8b5cf6;
+            --dd-ring-track: #d1fae5;
+            --dd-guide: #7c3aed;
+            --dd-btn-clear-border: #cbd5e1;
+            --dd-btn-clear-text: #475569;
+        }
+        .dark .bec-slide {
+            --dd-title-a: #a5b4fc;
+            --dd-title-b: #60a5fa;
+            --dd-chip-bg: rgba(99, 102, 241, 0.10);
+            --dd-chip-border: rgba(129, 140, 248, 0.35);
+            --dd-chip-border-hover: rgba(129, 140, 248, 0.55);
+            --dd-chip-text: #a5b4fc;
+            --dd-chip-hover-bg: rgba(99, 102, 241, 0.18);
+            --dd-chip-sel-bg: rgba(99, 102, 241, 0.22);
+            --dd-chip-sel-border: rgba(129, 140, 248, 0.7);
+            --dd-blank-bg: rgba(148, 163, 184, 0.10);
+            --dd-blank-border: rgba(129, 140, 248, 0.4);
+            --dd-blank-border-hover: rgba(129, 140, 248, 0.65);
+            --dd-blank-num: #94a3b8;
+            --dd-blank-filled-bg: rgba(99, 102, 241, 0.16);
+            --dd-ico-time-bg: rgba(139, 92, 246, 0.18);
+            --dd-ico-time: #a78bfa;
+            --dd-ring-track: rgba(16, 185, 129, 0.25);
+            --dd-guide: #8b5cf6;
+            --dd-btn-clear-border: #334155;
+            --dd-btn-clear-text: #cbd5e1;
+        }
+
+        /* Stage override: keep the centered column but let it scroll on
+           very short viewports instead of clipping the exercise. */
+        .dd-stage { justify-content: flex-start; overflow-y: auto; }
+        .dd-col {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(0.55rem, 1.4vh, 0.95rem);
+            margin-block: auto;
+            padding-block: 0.25rem;
+        }
+
+        /* ── Heading ──────────────────────────────────────────────────── */
+        .dd-head { text-align: center; }
+        .dd-title {
+            margin: 0;
+            font-size: clamp(1.5rem, 4.3vh, 2.25rem);
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+            background: linear-gradient(100deg, var(--dd-title-a), var(--dd-title-b));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .dd-sub {
+            margin: 0.35rem 0 0;
+            font-size: clamp(0.8rem, 1.9vh, 1.02rem);
+            font-weight: 600;
+            color: var(--bec-text-2);
+        }
+
+        /* ── Unified four-section stat bar ────────────────────────────── */
+        .dd-stats {
+            width: min(920px, 100%);
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            background: var(--bec-surface);
+            border: 1px solid var(--bec-border);
+            border-radius: 0.9rem;
+            box-shadow: 0 10px 26px -16px rgba(15, 23, 42, 0.28);
+            padding: clamp(0.55rem, 1.5vh, 0.8rem) clamp(0.5rem, 1.4vw, 0.9rem);
+        }
+        .dd-stat {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.15rem 0.3rem;
+            min-width: 0;
+        }
+        .dd-stat + .dd-stat { border-left: 1px solid var(--bec-border); }
+        .dd-ico {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(1.9rem, 4.4vh, 2.15rem);
+            height: clamp(1.9rem, 4.4vh, 2.15rem);
+            border-radius: 9999px;
+        }
+        .dd-ico.is-good { background: var(--bec-good-soft); color: var(--bec-good); }
+        .dd-ico.is-bad { background: var(--bec-bad-soft); color: var(--bec-bad); }
+        .dd-ico.is-time { background: var(--dd-ico-time-bg); color: var(--dd-ico-time); }
+        .dd-ico svg { display: block; }
+        .dd-stat-label {
+            display: block;
+            font-size: clamp(0.56rem, 1.2vh, 0.66rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--bec-text-2);
+            white-space: nowrap;
+        }
+        .dd-stat-value {
+            display: block;
+            font-size: clamp(0.95rem, 2.3vh, 1.15rem);
+            font-weight: 800;
+            color: var(--bec-text);
+            font-variant-numeric: tabular-nums;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+        .dd-stat.is-good .dd-stat-value { color: var(--bec-good); }
+        .dd-stat.is-bad .dd-stat-value { color: var(--bec-bad); }
+
+        /* ── Word bank card ───────────────────────────────────────────── */
+        .dd-bank-card {
+            width: min(920px, 100%);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.7rem, 1.8vh, 0.95rem);
+            padding: clamp(0.85rem, 2.1vh, 1.1rem) clamp(1.05rem, 2.4vw, 1.45rem);
+            border-radius: 1.25rem;
+        }
+        .dd-bank-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+        .dd-bank-heading { display: flex; align-items: baseline; gap: 0.55rem; flex-wrap: wrap; min-width: 0; }
+        .dd-bank-title { margin: 0; font-size: clamp(0.95rem, 2.2vh, 1.12rem); font-weight: 800; letter-spacing: -0.01em; color: var(--bec-text); }
+        .dd-bank-hint { font-size: clamp(0.7rem, 1.55vh, 0.82rem); font-weight: 600; color: var(--bec-text-2); }
+        .dd-btn-show {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            background: var(--bec-brand-soft);
+            color: var(--dd-chip-text);
+            padding: clamp(0.42rem, 1.1vh, 0.52rem) clamp(0.95rem, 2vw, 1.15rem);
+            font-size: clamp(0.7rem, 1.5vh, 0.8rem);
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+        }
+        .dd-btn-show:hover { background: var(--dd-chip-hover-bg); box-shadow: 0 6px 14px -8px rgba(79, 70, 229, 0.45); }
+        .dd-btn-show:active { transform: scale(0.97); }
+
+        .dd-bank { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(0.5rem, 1.2vh, 0.62rem) clamp(0.55rem, 1.4vw, 0.72rem); }
+        .dd-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1.5px solid var(--dd-chip-border);
+            background: var(--dd-chip-bg);
+            color: var(--dd-chip-text);
+            border-radius: 9999px;
+            padding: clamp(0.42rem, 1.1vh, 0.55rem) clamp(0.95rem, 2.2vw, 1.2rem);
+            font-size: clamp(0.78rem, 1.8vh, 0.92rem);
+            font-weight: 800;
+            cursor: grab;
+            transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: none;
+        }
+        .dd-chip:hover {
+            border-color: var(--dd-chip-border-hover);
+            box-shadow: 0 8px 16px -9px rgba(79, 70, 229, 0.4);
+            transform: translateY(-1px);
+        }
+        .dd-chip:active { cursor: grabbing; }
+        .dd-chip.is-selected {
+            background: var(--dd-chip-sel-bg);
+            border-color: var(--dd-chip-sel-border);
+            box-shadow: 0 0 0 3px var(--dd-chip-hover-bg), 0 10px 18px -10px rgba(79, 70, 229, 0.5);
+        }
+        /* A placed word exists only inside its blank — never a second copy in the bank */
+        .dd-chip.is-used { display: none; }
+        /* Source placeholder while its word is being dragged */
+        .dd-chip.is-lifting { opacity: 0.4; border-style: dashed; box-shadow: none; transform: none; }
+        .dd-grip { flex: 0 0 auto; opacity: 0.6; }
+
+        /* ── Story card with drop-zone blanks ─────────────────────────── */
+        .dd-story-card {
+            width: min(920px, 100%);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.6rem, 1.6vh, 0.85rem);
+            padding: clamp(1rem, 2.4vh, 1.35rem) clamp(1.25rem, 3vw, 1.85rem);
+            border-radius: 1.25rem;
+        }
+        .dd-story {
+            margin: 0;
+            font-size: clamp(0.85rem, 2.05vh, 1rem);
+            font-weight: 600;
+            line-height: 2.4;
+            color: var(--bec-text);
+            text-align: left;
+        }
+        .dd-blank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: clamp(6rem, 12.5vw, 8.25rem);
+            height: clamp(1.95rem, 4.5vh, 2.2rem);
+            margin: 0 0.25rem;
+            padding: 0 0.6rem;
+            vertical-align: middle;
+            border: 1.5px dashed var(--dd-blank-border);
+            border-radius: 0.55rem;
+            background: var(--dd-blank-bg);
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: none;
+        }
+        .dd-blank:hover { border-color: var(--dd-blank-border-hover); background: var(--dd-chip-hover-bg); }
+        .dd-blank .n { font-size: 0.68rem; font-weight: 800; color: var(--dd-blank-num); }
+        .dd-blank .w {
+            font-size: clamp(0.78rem, 1.8vh, 0.92rem);
+            font-weight: 800;
+            color: var(--dd-chip-text);
+            white-space: nowrap;
+        }
+        .dd-blank.is-filled { border-style: solid; border-color: var(--dd-chip-border-hover); background: var(--dd-blank-filled-bg); }
+        .dd-blank.is-filled .n { display: none; }
+
+        /* While a drag is active: every empty zone invites the drop… */
+        .dd-col.is-dragging .dd-blank:not(.is-filled) {
+            background: var(--dd-chip-hover-bg);
+            border-color: var(--dd-chip-border-hover);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.07);
+        }
+        /* …and the zone under the pointer locks on. */
+        .dd-blank.is-over {
+            border-style: solid;
+            border-color: var(--dd-accent-deep);
+            background: var(--dd-chip-sel-bg);
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14), 0 12px 22px -10px rgba(124, 58, 237, 0.5);
+        }
+        /* Source blank while its word is being dragged away */
+        .dd-blank.is-lifting { opacity: 0.45; }
+        .dd-blank.is-lifting .w { visibility: hidden; }
+        .dd-blank.is-lifting .n { display: inline-flex; }
+
+        .dd-blank.is-correct, .dd-blank.is-revealed {
+            border-style: solid;
+            border-color: var(--bec-good);
+            background: var(--bec-good-soft);
+        }
+        .dd-blank.is-correct .w, .dd-blank.is-revealed .w { color: var(--bec-good); }
+        .dd-blank.is-wrong { border-style: solid; border-color: var(--bec-bad); background: var(--bec-bad-soft); }
+        .dd-blank.is-wrong .w { color: var(--bec-bad); }
+
+        /* Locked after Show Answer — Clear re-enables (buttons stay live) */
+        .dd-col.is-locked .dd-chip,
+        .dd-col.is-locked .dd-blank { pointer-events: none; }
+
+        .dd-chip:focus-visible, .dd-blank:focus-visible,
+        .dd-btn-check:focus-visible, .dd-btn-clear:focus-visible, .dd-btn-show:focus-visible {
+            outline: 2px solid var(--bec-brand);
+            outline-offset: 2px;
+        }
+
+        /* ── Action buttons ───────────────────────────────────────────── */
+        .dd-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 0.15rem; }
+        .dd-btn-check, .dd-btn-clear {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 9999px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: filter 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+        }
+        .dd-btn-check {
+            background: linear-gradient(100deg, #4f46e5, #6366f1);
+            color: #fff;
+            padding: clamp(0.6rem, 1.6vh, 0.72rem) clamp(1.5rem, 3.4vw, 2rem);
+            font-size: clamp(0.82rem, 1.9vh, 0.98rem);
+            font-weight: 800;
+            box-shadow: 0 14px 26px -12px rgba(79, 70, 229, 0.65);
+        }
+        .dd-btn-check:hover { filter: brightness(1.07); transform: translateY(-1px); }
+        .dd-btn-check:active { transform: scale(0.97); }
+        .dd-btn-clear {
+            background: var(--bec-surface);
+            border-color: var(--dd-btn-clear-border);
+            color: var(--dd-btn-clear-text);
+            padding: clamp(0.55rem, 1.5vh, 0.66rem) clamp(1.2rem, 2.6vw, 1.55rem);
+            font-size: clamp(0.76rem, 1.75vh, 0.9rem);
+            font-weight: 800;
+        }
+        .dd-btn-clear:hover { border-color: var(--bec-brand); color: var(--dd-chip-text); }
+        .dd-btn-clear:active { transform: scale(0.97); }
+
+        /* ── Floating drag preview + dashed guide (drag-only, never idle) ── */
+        .dd-ghost {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 90;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: linear-gradient(100deg, #7c3aed, #4f46e5);
+            color: #fff;
+            border-radius: 9999px;
+            padding: 0.5rem 1.15rem;
+            font-size: clamp(0.8rem, 1.85vh, 0.95rem);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            will-change: transform;
+            box-shadow: 0 20px 38px -12px rgba(109, 40, 217, 0.6), 0 4px 12px rgba(15, 23, 42, 0.18);
+        }
+        .dd-ghost .dd-grip { opacity: 0.85; }
+        .dd-guide {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            color: var(--dd-guide);
+            pointer-events: none;
+            z-index: 89;
+            display: none;
+        }
+        .dd-guide.is-on { display: block; }
     </style>
 </head>
 <body class="h-full overflow-hidden">
 <div class="bec-slide">
     <div class="bec-glow"></div>
 
-    <div class="bec-stage" style="gap: clamp(0.6rem, 1.8vh, 1.1rem)">
-        <div class="bec-header reveal">
-            <span class="bec-kicker">Slide 12 · Consolidation</span>
-            <h1 class="bec-title">Fill-in with the <span class="accent">right word:</span></h1>
-        </div>
+    <div class="bec-stage dd-stage">
+        <div class="dd-col" id="dd-col">
+            <!-- Title + instruction -->
+            <header class="dd-head reveal">
+                <h1 class="dd-title">Fill in with the right word</h1>
+                <p class="dd-sub">Drag the correct word into each gap.</p>
+            </header>
 
-        <div class="bec-card fill-card reveal">
-            <!-- Word bank -->
-            <div>
-                <p style="font-size:clamp(0.58rem,1.2vh,0.7rem);font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--bec-text-2);text-align:center;margin-bottom:0.45rem">Word bank — tap a word, then tap a blank</p>
-                <div class="bec-bank" id="word-bank"></div>
-            </div>
-
-            <!-- Story with blanks -->
-            <p class="fill-story" id="story">
-                The customer went to the bank to open a new
-                <button class="bec-blank" data-answer="account"><span class="n">(1)</span><span class="w">________</span></button>.
-                The worker asked for his
-                <button class="bec-blank" data-answer="ID card"><span class="n">(2)</span><span class="w">________</span></button>
-                to check who he was. He filled out a
-                <button class="bec-blank" data-answer="form"><span class="n">(3)</span><span class="w">________</span></button>
-                and gave a
-                <button class="bec-blank" data-answer="signiture"><span class="n">(4)</span><span class="w">________</span></button>.
-                Then the worker asked how much he wanted to
-                <button class="bec-blank" data-answer="deposit"><span class="n">(5)</span><span class="w">________</span></button>.
-                He gave $500 in
-                <button class="bec-blank" data-answer="cash"><span class="n">(6)</span><span class="w">________</span></button>.
-                The worker put everything into the
-                <button class="bec-blank" data-answer="computer system"><span class="n">(7)</span><span class="w">________</span></button>.
-                He said the account would be
-                <button class="bec-blank" data-answer="active"><span class="n">(8)</span><span class="w">________</span></button>
-                soon. He also said the customer would get an
-                <button class="bec-blank" data-answer="email"><span class="n">(9)</span><span class="w">________</span></button>
-                soon.
-            </p>
-
-            <!-- Controls + answer key -->
-            <div class="bec-quiznav" style="gap:0.5rem">
-                <button class="bec-btn bec-btn-primary" id="btn-check">Check Answers</button>
-                <button class="bec-btn bec-btn-outline" id="btn-reset">Clear</button>
-                <button class="bec-btn bec-btn-soft" id="btn-answers">Answer Key</button>
-            </div>
-            <p class="bec-feedback" id="feedback">&nbsp;</p>
-        </div>
-    </div>
-
-    <!-- Answer key overlay -->
-    <div class="bec-overlay" id="answers-overlay">
-        <div class="bec-card bec-modal">
-            <div class="bec-modal-head">
-                <h2 class="bec-modal-title">Answer key</h2>
-                <button class="bec-modal-close" id="answers-close" aria-label="Close answer key">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div class="bec-modal-body" style="justify-content:flex-start">
-                <div class="answers-grid">
-                    <p>(1) new account</p><p>(2) ID card</p><p>(3) form</p>
-                    <p>(4) signature</p><p>(5) deposit</p><p>(6) cash</p>
-                    <p>(7) computer system</p><p>(8) active</p><p>(9) email</p>
+            <!-- Progress / Correct / Mistakes / Time -->
+            <div class="dd-stats reveal" role="group" aria-label="Exercise score">
+                <div class="dd-stat">
+                    <svg width="26" height="26" viewBox="0 0 20 20" aria-hidden="true">
+                        <circle cx="10" cy="10" r="7.5" fill="none" stroke="var(--dd-ring-track)" stroke-width="3"/>
+                        <circle id="ring-fill" cx="10" cy="10" r="7.5" fill="none" stroke="var(--bec-good)" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 47.12" transform="rotate(-90 10 10)"/>
+                    </svg>
+                    <div><span class="dd-stat-label">Progress</span><span class="dd-stat-value" id="stat-progress">0/9</span></div>
+                </div>
+                <div class="dd-stat is-good">
+                    <span class="dd-ico is-good" aria-hidden="true">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                    </span>
+                    <div><span class="dd-stat-label">Correct</span><span class="dd-stat-value" id="stat-correct">0</span></div>
+                </div>
+                <div class="dd-stat is-bad">
+                    <span class="dd-ico is-bad" aria-hidden="true">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </span>
+                    <div><span class="dd-stat-label">Mistakes</span><span class="dd-stat-value" id="stat-mistakes">0</span></div>
+                </div>
+                <div class="dd-stat">
+                    <span class="dd-ico is-time" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                    </span>
+                    <div><span class="dd-stat-label">Time</span><span class="dd-stat-value" id="stat-time">00:00</span></div>
                 </div>
             </div>
+
+            <!-- Word bank -->
+            <section class="bec-card dd-bank-card reveal" aria-label="Word bank">
+                <div class="dd-bank-top">
+                    <div class="dd-bank-heading">
+                        <h2 class="dd-bank-title">Word Bank</h2>
+                        <span class="dd-bank-hint">(Drag the words below into the blanks)</span>
+                    </div>
+                    <button type="button" class="dd-btn-show" id="btn-show">Show Answer</button>
+                </div>
+                <div class="dd-bank" id="word-bank" role="group" aria-label="Words to place"></div>
+            </section>
+
+            <!-- Story with blanks -->
+            <section class="bec-card dd-story-card reveal" aria-label="Fill-in exercise">
+                <p class="dd-story">
+                    The customer went to the bank to open a new
+                    <button type="button" class="dd-blank" data-answer="account" aria-label="Gap 1, empty"><span class="n">1</span><span class="w"></span></button>.
+                    The worker asked for his
+                    <button type="button" class="dd-blank" data-answer="ID card" aria-label="Gap 2, empty"><span class="n">2</span><span class="w"></span></button>
+                    to check who he was. He filled out a
+                    <button type="button" class="dd-blank" data-answer="form" aria-label="Gap 3, empty"><span class="n">3</span><span class="w"></span></button>
+                    and gave a
+                    <button type="button" class="dd-blank" data-answer="signiture" aria-label="Gap 4, empty"><span class="n">4</span><span class="w"></span></button>.
+                    Then the worker asked how much he wanted to
+                    <button type="button" class="dd-blank" data-answer="deposit" aria-label="Gap 5, empty"><span class="n">5</span><span class="w"></span></button>.
+                    He gave $500 in
+                    <button type="button" class="dd-blank" data-answer="cash" aria-label="Gap 6, empty"><span class="n">6</span><span class="w"></span></button>.
+                    The worker put everything into the
+                    <button type="button" class="dd-blank" data-answer="computer system" aria-label="Gap 7, empty"><span class="n">7</span><span class="w"></span></button>.
+                    He said the account would be
+                    <button type="button" class="dd-blank" data-answer="active" aria-label="Gap 8, empty"><span class="n">8</span><span class="w"></span></button>
+                    soon. He also said the customer would get an
+                    <button type="button" class="dd-blank" data-answer="email" aria-label="Gap 9, empty"><span class="n">9</span><span class="w"></span></button>
+                    soon.
+                </p>
+
+                <div class="dd-actions">
+                    <button type="button" class="dd-btn-check" id="btn-check">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                        Check Answers
+                    </button>
+                    <button type="button" class="dd-btn-clear" id="btn-clear">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><path d="M3 4v5h5"/></svg>
+                        Clear
+                    </button>
+                </div>
+                <p class="bec-feedback" id="feedback">&nbsp;</p>
+            </section>
         </div>
     </div>
 </div>
 
+<!-- Curved dashed guide shown only while a word is actively dragged over a blank -->
+<svg class="dd-guide" id="dd-guide" aria-hidden="true">
+    <defs>
+        <marker id="dd-guide-head" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+    </defs>
+    <path id="dd-guide-path" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="8 7" stroke-linecap="round" marker-end="url(#dd-guide-head)"/>
+</svg>
+
 <script>
     const BANK = ["active", "computer system", "cash", "form", "account", "email", "signiture", "deposit", "ID card"];
+    const TOTAL = 9;
+    const GRIP = '<svg width="11" height="11" viewBox="0 0 10 10" class="dd-grip" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="1.5" r="1.3"/><circle cx="7.5" cy="1.5" r="1.3"/><circle cx="2.5" cy="5" r="1.3"/><circle cx="7.5" cy="5" r="1.3"/><circle cx="2.5" cy="8.5" r="1.3"/><circle cx="7.5" cy="8.5" r="1.3"/></svg>';
+    const RING_LEN = 47.12; // 2πr, r = 7.5
 
     document.addEventListener('DOMContentLoaded', () => {
         const $ = (id) => document.getElementById(id);
-        const bankEl = $('word-bank');
-        const blanks = Array.from(document.querySelectorAll('.bec-blank'));
-        let selected = null;
+        const bankEl = $('word-bank'), colEl = $('dd-col'), fb = $('feedback');
+        const statProgress = $('stat-progress'), statCorrect = $('stat-correct'), statMistakes = $('stat-mistakes'), statTime = $('stat-time');
+        const ringFill = $('ring-fill'), guideEl = $('dd-guide'), guidePath = $('dd-guide-path');
+        const norm = (s) => s.trim().toLowerCase();
 
-        function refreshUsed() {
-            const filled = new Set(blanks.map(b => b.dataset.filled).filter(Boolean));
-            bankEl.querySelectorAll('.bec-chip').forEach(chip => {
-                chip.classList.toggle('is-used', filled.has(chip.textContent.trim()));
-                if (chip.classList.contains('is-used')) chip.classList.remove('is-selected');
-            });
-            if (selected && filled.has(selected)) selected = null;
-        }
+        /* ── Single source of truth ───────────────────────────────────
+           placed[i] = word sitting in blank i (a word appears at most once,
+           enforced by place()); marks[i] = 'correct' | 'wrong' | 'revealed'
+           | null. Every pixel is derived from these two arrays via render(),
+           so a duplicated or lost word is structurally impossible. */
+        const placed = new Array(TOTAL).fill(null);
+        const marks = new Array(TOTAL).fill(null);
+        let revealed = false;
+        let selected = null;      // word chosen via tap / keyboard (mobile fallback)
+        let drag = null;          // active pointer drag { word, from, moved, sx, sy, id }
+        let ghost = null;
+        let overIdx = -1;         // blank currently under the pointer during a drag
+        let clickGuard = false;   // suppress the click that follows a completed drag
+        let timerId = null, seconds = 0, timerStarted = false;
 
-        BANK.forEach(word => {
+        /* ── Build the word bank ── */
+        const chips = BANK.map(word => {
             const chip = document.createElement('button');
-            chip.className = 'bec-chip';
-            chip.textContent = word;
-            chip.addEventListener('click', () => {
-                const was = chip.classList.contains('is-selected');
-                bankEl.querySelectorAll('.bec-chip').forEach(c => c.classList.remove('is-selected'));
-                selected = was ? null : word;
-                if (selected) chip.classList.add('is-selected');
-            });
+            chip.type = 'button';
+            chip.className = 'dd-chip';
+            chip.dataset.word = word;
+            chip.setAttribute('aria-label', `Word: ${word}`);
+            chip.setAttribute('aria-pressed', 'false');
+            chip.innerHTML = GRIP + '<span></span>';
+            chip.querySelector('span').textContent = word;
             bankEl.appendChild(chip);
+            return chip;
         });
+        const blanks = Array.from(document.querySelectorAll('.dd-blank'));
+        const chipFor = (word) => chips.find(c => c.dataset.word === word);
 
-        blanks.forEach(blank => {
-            blank.addEventListener('click', () => {
-                if (selected) {
-                    blank.dataset.filled = selected;
-                    blank.querySelector('.w').textContent = selected;
-                    blank.classList.add('is-filled');
-                    blank.classList.remove('is-correct', 'is-wrong');
-                    selected = null;
-                } else if (blank.dataset.filled) {
-                    delete blank.dataset.filled;
-                    blank.querySelector('.w').textContent = '________';
-                    blank.classList.remove('is-filled', 'is-correct', 'is-wrong');
-                }
-                refreshUsed();
-            });
-        });
-
-        $('btn-check').addEventListener('click', () => {
-            let correct = 0, wrong = 0, empty = 0;
-            blanks.forEach(b => {
-                b.classList.remove('is-correct', 'is-wrong');
-                if (!b.dataset.filled) { empty++; return; }
-                if (b.dataset.filled.trim().toLowerCase() === b.dataset.answer.trim().toLowerCase()) { b.classList.add('is-correct'); correct++; }
-                else { b.classList.add('is-wrong'); wrong++; }
-            });
-            const fb = $('feedback');
-            fb.className = 'bec-feedback ' + (wrong || empty ? 'is-info' : 'is-good');
-            fb.textContent = empty ? `${correct} correct · ${wrong} wrong · ${empty} blank left` : `${correct} of ${blanks.length} correct`;
-        });
-
-        $('btn-reset').addEventListener('click', fullReset);
-        const answersOverlay = $('answers-overlay');
-        $('btn-answers').addEventListener('click', () => answersOverlay.classList.add('is-open'));
-        $('answers-close').addEventListener('click', () => answersOverlay.classList.remove('is-open'));
-        answersOverlay.addEventListener('click', (e) => { if (e.target === answersOverlay) answersOverlay.classList.remove('is-open'); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') answersOverlay.classList.remove('is-open'); });
-
-        function fullReset() {
-            selected = null;
-            bankEl.querySelectorAll('.bec-chip').forEach(c => c.classList.remove('is-selected', 'is-used'));
-            blanks.forEach(b => {
-                delete b.dataset.filled;
-                b.querySelector('.w').textContent = '________';
-                b.classList.remove('is-filled', 'is-correct', 'is-wrong');
-            });
-            $('feedback').className = 'bec-feedback';
-            $('feedback').innerHTML = '&nbsp;';
-            answersOverlay.classList.remove('is-open');
+        /* ── Timer (family behavior: starts on first answer action) ── */
+        function startTimer() {
+            if (timerStarted) return;
+            timerStarted = true;
+            timerId = setInterval(() => {
+                seconds++;
+                statTime.textContent = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+            }, 1000);
         }
+        function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+        function clearFeedback() { fb.className = 'bec-feedback'; fb.innerHTML = '&nbsp;'; }
+
+        /* ── Derived rendering: state → DOM ── */
+        function render() {
+            chips.forEach(chip => {
+                const word = chip.dataset.word;
+                const used = placed.includes(word);
+                chip.classList.toggle('is-used', used);
+                chip.classList.toggle('is-selected', !used && selected === word);
+                chip.setAttribute('aria-pressed', (!used && selected === word) ? 'true' : 'false');
+            });
+            blanks.forEach((b, i) => {
+                const word = placed[i], mark = marks[i];
+                b.classList.toggle('is-filled', !!word);
+                b.classList.toggle('is-correct', mark === 'correct' || mark === 'revealed');
+                b.classList.toggle('is-revealed', mark === 'revealed');
+                b.classList.toggle('is-wrong', mark === 'wrong');
+                b.querySelector('.w').textContent = word || '';
+                b.setAttribute('aria-label', word ? `Gap ${i + 1}: ${word}` : `Gap ${i + 1}, empty`);
+            });
+            const filled = placed.filter(Boolean).length;
+            statProgress.textContent = `${filled}/${TOTAL}`;
+            ringFill.setAttribute('stroke-dasharray', `${RING_LEN * filled / TOTAL} ${RING_LEN}`);
+            statCorrect.textContent = String(marks.filter(m => m === 'correct').length);
+            statMistakes.textContent = String(marks.filter(m => m === 'wrong').length);
+        }
+
+        /* ── State transitions ── */
+        function place(i, word) {
+            const prev = placed.indexOf(word);      // a word lives in one blank only
+            if (prev !== -1) placed[prev] = null;
+            placed[i] = word;                       // displaced occupant falls back to the bank
+            marks[i] = null;                        // new answer → needs (re)checking
+            selected = null;
+            clearFeedback();
+            startTimer();
+            render();
+        }
+        function removeAt(i) {
+            if (!placed[i]) return;
+            placed[i] = null;
+            marks[i] = null;
+            clearFeedback();
+            render();
+        }
+
+        /* ── Pointer drag (mouse + touch + pen) — state is never touched
+              mid-drag, so a cancelled drop simply changes nothing. ── */
+        function blankAt(x, y) {
+            const el = document.elementFromPoint(x, y);
+            return el ? el.closest('.dd-blank') : null;
+        }
+        function makeGhost(word) {
+            ghost = document.createElement('div');
+            ghost.className = 'dd-ghost';
+            ghost.innerHTML = GRIP + '<span></span>';
+            ghost.querySelector('span').textContent = word;
+            document.body.appendChild(ghost);
+        }
+        function drawGuide(px, py) {
+            if (overIdx === -1 || !ghost) { guideEl.classList.remove('is-on'); return; }
+            const r = blanks[overIdx].getBoundingClientRect();
+            const tx = r.left + r.width / 2, ty = r.top + r.height / 2;
+            const sx = px, sy = py - 18;
+            if (Math.hypot(tx - sx, ty - sy) < 48) { guideEl.classList.remove('is-on'); return; }
+            const cx = (sx + tx) / 2 - (ty - sy) * 0.25;
+            const cy = (sy + ty) / 2 - (tx - sx) * 0.25;
+            guidePath.setAttribute('d', `M ${sx} ${sy} Q ${cx} ${cy} ${tx} ${ty}`);
+            guideEl.classList.add('is-on');
+        }
+        function beginDrag(e, word, fromIdx) {
+            if (revealed || (e.pointerType === 'mouse' && e.button !== 0)) return;
+            drag = { word, from: fromIdx, moved: false, sx: e.clientX, sy: e.clientY, id: e.pointerId };
+            try { e.target.setPointerCapture(e.pointerId); } catch (err) {}
+            document.addEventListener('pointermove', onDragMove);
+            document.addEventListener('pointerup', onDragEnd);
+            document.addEventListener('pointercancel', onDragCancel);
+        }
+        function onDragMove(e) {
+            if (!drag || e.pointerId !== drag.id) return;
+            if (!drag.moved) {
+                if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) <= 6) return;
+                drag.moved = true;
+                colEl.classList.add('is-dragging');
+                if (drag.from == null) chipFor(drag.word)?.classList.add('is-lifting');
+                else blanks[drag.from].classList.add('is-lifting');
+                makeGhost(drag.word);
+            }
+            if (e.cancelable) e.preventDefault();
+            ghost.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -125%) rotate(-2deg) scale(1.06)`;
+            const blank = blankAt(e.clientX, e.clientY);
+            const idx = blank ? blanks.indexOf(blank) : -1;
+            if (idx !== overIdx) {
+                if (overIdx !== -1) blanks[overIdx].classList.remove('is-over');
+                overIdx = idx;
+                if (overIdx !== -1) blanks[overIdx].classList.add('is-over');
+            }
+            drawGuide(e.clientX, e.clientY);
+        }
+        function endDragVisuals() {
+            document.removeEventListener('pointermove', onDragMove);
+            document.removeEventListener('pointerup', onDragEnd);
+            document.removeEventListener('pointercancel', onDragCancel);
+            ghost?.remove(); ghost = null;
+            guideEl.classList.remove('is-on');
+            colEl.classList.remove('is-dragging');
+            if (overIdx !== -1) { blanks[overIdx].classList.remove('is-over'); overIdx = -1; }
+            if (drag) {
+                if (drag.from == null) chipFor(drag.word)?.classList.remove('is-lifting');
+                else blanks[drag.from].classList.remove('is-lifting');
+            }
+        }
+        function onDragEnd(e) {
+            if (!drag || e.pointerId !== drag.id) return;
+            const { moved, word } = drag;
+            endDragVisuals();
+            if (moved) {
+                clickGuard = true;
+                setTimeout(() => { clickGuard = false; }, 0);
+                const blank = blankAt(e.clientX, e.clientY);
+                if (blank && !revealed) place(blanks.indexOf(blank), word);
+                // A missed drop changes nothing: the word stays in the bank
+                // (or in its original blank) because state was never mutated.
+            }
+            drag = null;
+        }
+        function onDragCancel() {
+            if (!drag) return;
+            endDragVisuals();
+            drag = null;
+        }
+
+        chips.forEach(chip => {
+            chip.addEventListener('pointerdown', (e) => {
+                if (chip.classList.contains('is-used')) return;
+                beginDrag(e, chip.dataset.word, null);
+            });
+            chip.addEventListener('click', () => {
+                if (revealed || clickGuard || chip.classList.contains('is-used')) return;
+                selected = (selected === chip.dataset.word) ? null : chip.dataset.word;
+                render();
+            });
+        });
+
+        blanks.forEach((blank, i) => {
+            blank.addEventListener('pointerdown', (e) => {
+                if (placed[i]) beginDrag(e, placed[i], i);
+            });
+            blank.addEventListener('click', () => {
+                if (revealed || clickGuard) return;
+                if (selected) place(i, selected);       // tap-to-place fallback
+                else if (placed[i]) removeAt(i);        // tap a filled blank to empty it
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (drag) onDragCancel();
+                else if (selected) { selected = null; render(); }
+            }
+        });
+
+        /* ── Check answers ── */
+        $('btn-check').addEventListener('click', () => {
+            if (revealed) return;
+            let correct = 0, wrong = 0, empty = 0;
+            blanks.forEach((b, i) => {
+                if (!placed[i]) { marks[i] = null; empty++; }
+                else if (norm(placed[i]) === norm(b.dataset.answer)) { marks[i] = 'correct'; correct++; }
+                else { marks[i] = 'wrong'; wrong++; }
+            });
+            startTimer();
+            render();
+            if (empty === 0 && wrong === 0) { fb.className = 'bec-feedback is-good'; fb.textContent = 'Correct! Well done.'; }
+            else if (wrong > 0) { fb.className = 'bec-feedback is-bad'; fb.textContent = `Not quite — ${correct} correct, ${wrong} wrong${empty ? `, ${empty} blank${empty > 1 ? 's' : ''} left` : ''}.`; }
+            else { fb.className = 'bec-feedback is-info'; fb.textContent = `${empty} blank${empty > 1 ? 's' : ''} left to fill.`; }
+        });
+
+        /* ── Show answer (family behavior: reveal inline, lock until Clear;
+              revealed gaps never count as learner correct answers) ── */
+        $('btn-show').addEventListener('click', () => {
+            if (revealed) return;
+            revealed = true;
+            blanks.forEach((b, i) => { placed[i] = b.dataset.answer; marks[i] = 'revealed'; });
+            selected = null;
+            startTimer();
+            colEl.classList.add('is-locked');
+            render();
+            fb.className = 'bec-feedback is-info';
+            fb.textContent = 'Answer revealed.';
+        });
+
+        /* ── Clear / reset (reader hook) ── */
+        function fullReset() {
+            revealed = false;
+            selected = null;
+            if (drag) { endDragVisuals(); drag = null; }
+            placed.fill(null);
+            marks.fill(null);
+            colEl.classList.remove('is-locked');
+            seconds = 0; timerStarted = false;
+            stopTimer();
+            statTime.textContent = '00:00';
+            clearFeedback();
+            render();
+        }
+        $('btn-clear').addEventListener('click', fullReset);
         window.resetSlide = fullReset;
 
+        window.stopSlideAudio = function stopSlideAudio() { stopTimer(); };
+
+        /* ── Init ── */
+        render();
+
+        /* Subtle entrance */
         const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (window.gsap && !reduced) {
-            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.09, ease: 'power2.out', clearProps: 'all' });
         }
     });
 </script>
