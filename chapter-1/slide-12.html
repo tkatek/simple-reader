@@ -27,6 +27,13 @@
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -67,7 +74,6 @@
             --dd-ico-time-bg: #f5f3ff;
             --dd-ico-time: #8b5cf6;
             --dd-ring-track: #d1fae5;
-            --dd-guide: #7c3aed;
             --dd-btn-clear-border: #cbd5e1;
             --dd-btn-clear-text: #475569;
         }
@@ -89,7 +95,6 @@
             --dd-ico-time-bg: rgba(139, 92, 246, 0.18);
             --dd-ico-time: #a78bfa;
             --dd-ring-track: rgba(16, 185, 129, 0.25);
-            --dd-guide: #8b5cf6;
             --dd-btn-clear-border: #334155;
             --dd-btn-clear-text: #cbd5e1;
         }
@@ -111,7 +116,7 @@
         .dd-head { text-align: center; }
         .dd-title {
             margin: 0;
-            font-size: clamp(1.5rem, 4.3vh, 2.25rem);
+            font-size: var(--bec-title-size);
             font-weight: 800;
             letter-spacing: -0.025em;
             line-height: 1.15;
@@ -122,14 +127,14 @@
         }
         .dd-sub {
             margin: 0.35rem 0 0;
-            font-size: clamp(0.8rem, 1.9vh, 1.02rem);
+            font-size: var(--bec-sub-size);
             font-weight: 600;
             color: var(--bec-text-2);
         }
 
         /* ── Unified four-section stat bar ────────────────────────────── */
         .dd-stats {
-            width: min(920px, 100%);
+            width: min(var(--bec-w-standard), 100%);
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             background: var(--bec-surface);
@@ -395,12 +400,27 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            color: var(--dd-guide);
+            color: #7c3aed;
             pointer-events: none;
             z-index: 89;
             display: none;
         }
+        .dark .dd-guide { color: #8b5cf6; }
         .dd-guide.is-on { display: block; }
+
+        /* ── Phone: compact 2×2 score bar, readable story, full-width cards ── */
+        @media (max-width: 640px) {
+            .dd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.55rem; }
+            .dd-stat + .dd-stat { border-left: none; }
+            .dd-stat:nth-child(even) { border-left: 1px solid var(--bec-border); }
+            .dd-stat:nth-child(n+3) { border-top: 1px solid var(--bec-border); padding-top: 0.55rem; }
+            .dd-bank-card, .dd-story-card { padding: 0.9rem 0.85rem; }
+            .dd-bank { gap: 0.45rem; }
+            .dd-story { font-size: 0.98rem; line-height: 2.15; }
+            .dd-blank { min-width: 5.5rem; height: 2.15rem; }
+            .dd-actions { gap: 0.6rem; }
+            .dd-btn-check, .dd-btn-clear { flex: 1 1 auto; }
+        }
     </style>
 </head>
 <body class="h-full overflow-hidden">
@@ -620,14 +640,15 @@
             ghost.querySelector('span').textContent = word;
             document.body.appendChild(ghost);
         }
-        function drawGuide(px, py) {
-            if (overIdx === -1 || !ghost) { guideEl.classList.remove('is-on'); return; }
+        function drawGuide() {
+            if (overIdx === -1 || !drag || !drag.origin) { guideEl.classList.remove('is-on'); return; }
             const r = blanks[overIdx].getBoundingClientRect();
-            const tx = r.left + r.width / 2, ty = r.top + r.height / 2;
-            const sx = px, sy = py - 18;
-            if (Math.hypot(tx - sx, ty - sy) < 48) { guideEl.classList.remove('is-on'); return; }
-            const cx = (sx + tx) / 2 - (ty - sy) * 0.25;
-            const cy = (sy + ty) / 2 - (tx - sx) * 0.25;
+            const tx = r.left + r.width * 0.35, ty = r.top - 3; // land just above the gap
+            const sx = drag.origin.x, sy = drag.origin.y;
+            const dist = Math.hypot(tx - sx, ty - sy);
+            if (dist < 36) { guideEl.classList.remove('is-on'); return; }
+            const cx = (sx + tx) / 2 + (ty - sy) * 0.12;
+            const cy = (sy + ty) / 2 - dist * 0.28; // arc up over the whitespace
             guidePath.setAttribute('d', `M ${sx} ${sy} Q ${cx} ${cy} ${tx} ${ty}`);
             guideEl.classList.add('is-on');
         }
@@ -647,6 +668,8 @@
                 colEl.classList.add('is-dragging');
                 if (drag.from == null) chipFor(drag.word)?.classList.add('is-lifting');
                 else blanks[drag.from].classList.add('is-lifting');
+                const src = (drag.from == null ? chipFor(drag.word) : blanks[drag.from]).getBoundingClientRect();
+                drag.origin = { x: src.left + src.width / 2, y: src.top + src.height / 2 };
                 makeGhost(drag.word);
             }
             if (e.cancelable) e.preventDefault();
@@ -658,7 +681,7 @@
                 overIdx = idx;
                 if (overIdx !== -1) blanks[overIdx].classList.add('is-over');
             }
-            drawGuide(e.clientX, e.clientY);
+            drawGuide();
         }
         function endDragVisuals() {
             document.removeEventListener('pointermove', onDragMove);

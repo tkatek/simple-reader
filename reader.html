@@ -144,17 +144,54 @@
             background: var(--bg-body);
         }
 
+        /* Full-stage slide backdrop: the lavender stage wash painted
+           edge-to-edge behind the scaled slide canvas. Slides turn their
+           own background transparent when embedded (html.bec-embedded),
+           so the stage is fully covered regardless of stage aspect ratio,
+           zoom level, or scrolling. Mirrors .bec-slide in chapter-1/bec.css. */
+        .slide-backdrop {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(46rem 32rem at -6% -10%, rgba(139, 124, 243, 0.20), transparent 62%),
+                radial-gradient(44rem 30rem at 106% 110%, rgba(59, 130, 246, 0.13), transparent 60%),
+                #f3f4fb;
+        }
+        .dark .slide-backdrop {
+            background:
+                radial-gradient(46rem 32rem at -6% -10%, rgba(99, 102, 241, 0.16), transparent 62%),
+                radial-gradient(44rem 30rem at 106% 110%, rgba(59, 130, 246, 0.10), transparent 60%),
+                #0f172a;
+        }
+
         .slide {
             position: absolute;
             inset: 0;
             display: flex;
             overflow: auto;
+            /* Reserve the scrollbar gutter so the scrollable gallery slide
+               never gains an 8px horizontal overflow when its vertical
+               scrollbar appears. */
+            scrollbar-gutter: stable;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateX(30px);
         }
+
+        /* Hidden slides must not create phantom scroll area via their
+           translateX transition offset. */
+        .slide:not(.active) { overflow: hidden; }
+
+        /* Slim, unobtrusive scrollbar for the teaching stage — sits at
+           the right boundary of the stage, next to the sidebar. */
+        .slide::-webkit-scrollbar { width: 8px; height: 8px; }
+        .slide::-webkit-scrollbar-track { background: transparent; }
+        .slide::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.35); border-radius: 9999px; }
+        .slide::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.55); }
 
         .slide.active {
             opacity: 1;
@@ -174,6 +211,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            z-index: 1;
         }
 
         /* Sidebar Styles */
@@ -235,6 +274,26 @@
             margin: auto; /* centers when smaller, stays scroll-reachable when larger */
         }
 
+        /* Reflow (mobile) stages: canvas runs full width from the top of
+           the stage — content starts under the header, never floating in
+           vertically-centered empty space. */
+        .slide.is-reflow .slide-scaler { margin: 0; }
+
+        /* Mobile stages scroll by touch, never by bars: no scrollbar chrome
+           and no reserved gutter on either axis (the classic-scrollbar
+           gutter drew an empty horizontal track and stole vertical room,
+           creating useless scrollbars on slides that fit). overflow-x is
+           a hard lock — at 100% zoom the canvas is exactly the stage width,
+           so nothing is ever lost. Deliberate zoom re-opens x-panning. */
+        .slide.is-reflow {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            scrollbar-gutter: auto;
+            overflow-x: hidden;
+        }
+        .slide.is-reflow::-webkit-scrollbar { width: 0; height: 0; display: none; }
+        .slide.is-reflow.is-zoomed { overflow-x: auto; }
+
         .slide-canvas {
             position: absolute;
             top: 0;
@@ -242,7 +301,9 @@
             width: 1280px;
             height: 720px;
             border: none;
-            background: var(--bg-card);
+            /* Transparent so the full-stage backdrop shows through the
+               embedded slides (they switch their own paint off). */
+            background: transparent;
             pointer-events: none;
             transform-origin: top left;
             display: block;
@@ -596,6 +657,7 @@
 <div class="flex flex-1 relative overflow-hidden">
     <!-- Main Content Area -->
     <main class="flex-1 slide-container w-full">
+        <div class="slide-backdrop" aria-hidden="true"></div>
         <div id="zoom-wrapper" class="zoom-container">
             <div id="slides-wrapper" class="w-full h-full relative">
                 <template id="slide-template">
@@ -819,6 +881,11 @@
                 lastH = b.height;
                 applyScale();
             }
+            // Scrolling slides: track natural content height (fonts and
+            // media can change it after the load-time ResizeObserver pass).
+            document.querySelectorAll('.slide-canvas').forEach(canvas => {
+                if (canvas._becIsScroll) syncScrollCanvasHeight(canvas);
+            });
         }, 400);
 
         window.addEventListener('keydown', (e) => {
@@ -830,21 +897,84 @@
     // --- SLIDE SCALING (fixed 16:9 design canvas, fit to view) ---
     const DESIGN_W = 1280;
     const DESIGN_H = 720;
+    /* Narrow stages (phones, portrait tablets): the slide is laid out at the
+       REAL stage width and grows to its natural content height instead of
+       being scaled down from the 1280×720 desktop canvas. Slides carry
+       their own @media rules, which only match once the iframe viewport is
+       the true mobile width — a 0.3× miniature of the desktop slide is
+       never shown. Desktop-width stages keep the fixed scaled canvas. */
+    const REFLOW_MAX_W = 860;
 
-    function currentFitScale() {
-        const box = document.getElementById('slides-wrapper').getBoundingClientRect();
-        if (!box.width || !box.height) return 1;
-        return Math.min(box.width / DESIGN_W, box.height / DESIGN_H);
+    /* Scrolling slides (slideData[].scroll): the canvas is laid out at the
+       FULL stage width and grows to its natural content height. The slide
+       element itself is the scroll owner, so the vertical scrollbar sits
+       exactly at the right edge of the teaching stage, adjacent to the
+       sidebar — not inside a narrower inner canvas. Zoom applies as a
+       visual transform on the canvas, as with fixed slides. */
+    function syncScrollCanvasHeight(iframe) {
+        try {
+            const doc = iframe.contentDocument;
+            if (!doc || !doc.body || doc.readyState === 'loading') return;
+            const h = Math.ceil(Math.max(doc.documentElement.scrollHeight || 0, doc.body.scrollHeight || 0));
+            // Re-fit when the height changes OR when the layout width moved
+            // (the same height at a new width is a different layout).
+            if (h > 0 && (Math.abs(h - (iframe._becContentH || 0)) > 1 || iframe.clientWidth !== (iframe._becContentW || 0))) {
+                iframe._becContentH = h;
+                iframe._becContentW = iframe.clientWidth;
+                applyScale();
+            }
+        } catch (e) { /* cross-origin guard — never fatal */ }
     }
 
     function applyScale() {
-        const scale = currentFitScale() * state.zoom;
-        document.querySelectorAll('.slide-scaler').forEach(el => {
-            el.style.width = `${DESIGN_W * scale}px`;
-            el.style.height = `${DESIGN_H * scale}px`;
-        });
-        document.querySelectorAll('.slide-canvas').forEach(el => {
-            el.style.transform = `scale(${scale})`;
+        document.querySelectorAll('.slide').forEach((el, index) => {
+            const scaler = el.querySelector('.slide-scaler');
+            const canvas = el.querySelector('.slide-canvas');
+            if (!scaler || !canvas) return;
+            // Fit inside the slide's own scroll port (clientWidth already
+            // excludes the reserved scrollbar gutter), so a fitted canvas
+            // never creates phantom overflow.
+            const availW = el.clientWidth;
+            const availH = el.clientHeight;
+            if (!availW || !availH) return;
+            // Scrolling slides always reflow; every slide reflows on a stage
+            // narrow enough that the scaled 1280×720 canvas would be tiny.
+            const reflow = Boolean(slideData[index] && slideData[index].scroll) || availW <= REFLOW_MAX_W;
+            // Reflow stages pin the canvas to the top of the stage so the
+            // activity starts right under the header at every zoom level.
+            // is-zoomed re-opens horizontal panning for deliberate zoom.
+            el.classList.toggle('is-reflow', reflow);
+            el.classList.toggle('is-zoomed', reflow && state.zoom > 1);
+            if (reflow) {
+                const zoom = state.zoom;
+                // A height measured at a different layout width is stale
+                // (slides pin min-height:100dvh to the iframe height, so the
+                // old base — e.g. the initial 720px canvas — would otherwise
+                // persist as phantom scrollable space). Drop it and re-anchor
+                // to the stage height; the ResizeObserver re-measures at the
+                // reflow width right after.
+                if (canvas._becContentW !== undefined && canvas._becContentW !== availW) {
+                    canvas._becContentH = 0;
+                    canvas.style.height = `${availH}px`;
+                }
+                // A sliver of extra height (≤22px) is always empty stage
+                // padding, never content — absorbing it keeps fitting
+                // slides perfectly still instead of uselessly scrollable.
+                const measured = Math.max(availH, canvas._becContentH || 0);
+                const contentH = (measured - availH) <= 22 ? availH : measured;
+                scaler.style.width = `${availW * zoom}px`;
+                scaler.style.height = `${contentH * zoom}px`;
+                canvas.style.width = `${availW}px`;
+                canvas.style.height = `${contentH}px`;
+                canvas.style.transform = zoom === 1 ? 'none' : `scale(${zoom})`;
+            } else {
+                const scale = Math.min(availW / DESIGN_W, availH / DESIGN_H) * state.zoom;
+                scaler.style.width = `${DESIGN_W * scale}px`;
+                scaler.style.height = `${DESIGN_H * scale}px`;
+                canvas.style.width = '';
+                canvas.style.height = '';
+                canvas.style.transform = `scale(${scale})`;
+            }
         });
     }
 
@@ -856,9 +986,13 @@
             const clone = template.content.cloneNode(true);
             const slide = clone.querySelector('.slide');
             const iframe = slide.querySelector('iframe');
-            // Slides marked scroll:true keep internal scrolling (their content
-            // intentionally exceeds one 16:9 canvas); all others are fixed.
-            if (data.scroll) iframe.setAttribute('scrolling', 'yes');
+            // Scrolling slides lay out at full stage width and grow to their
+            // natural content height; the slide element itself is the scroll
+            // owner, so the canvas must not scroll internally (an inner
+            // scrollbar would shrink the layout and re-wrap the gallery,
+            // creating a second scrollbar). On narrow (reflow) stages every
+            // slide behaves this way, so height tracking is enabled for all.
+            iframe._becIsScroll = true;
             // iframe.src = data.src; we will load it using ajax
 
             // Sync theme when iframe loads
@@ -867,6 +1001,19 @@
                 if (iframe.contentWindow && typeof iframe.contentWindow.setTheme === 'function') {
                     iframe.contentWindow.setTheme(isDark ? 'dark' : 'light');
                 }
+                // Track the natural content height so the canvas always
+                // shows the whole page inside the stage scroll — needed by
+                // the gallery slide and by every slide on reflow (mobile)
+                // stages, where content may be taller than the viewport.
+                try {
+                    const doc = iframe.contentDocument;
+                    if (doc) {
+                        syncScrollCanvasHeight(iframe);
+                        const ro = new ResizeObserver(() => syncScrollCanvasHeight(iframe));
+                        ro.observe(doc.documentElement);
+                        ro.observe(doc.body);
+                    }
+                } catch (e) { /* cross-origin guard */ }
             };
 
             wrapper.appendChild(clone);
@@ -928,13 +1075,18 @@
         }
     }
     function updateSlides() {
-        applyScale(); // re-fit in case the view area changed since last paint
         state.slides.forEach((s, i) => {
             // 1. Handle CSS Transitions
             s.classList.toggle('active', i === state.currentSlide);
             s.classList.toggle('prev', i < state.currentSlide);
             s.classList.toggle('next', i > state.currentSlide);
+            // 2. Every slide re-enters unscrolled (the stage element owns
+            //    vertical scrolling for the long gallery slide).
+            if (i === state.currentSlide) { s.scrollTop = 0; s.scrollLeft = 0; }
         });
+        // Re-fit after the class change: the scroll slide's reserved
+        // scrollbar gutter only applies once it is the active scroller.
+        applyScale();
 
         // Load current slide now, then preload the next slides in the background.
         loadSlideAtIndex(state.currentSlide);

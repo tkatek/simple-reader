@@ -27,6 +27,13 @@
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -126,30 +133,30 @@
         /* ── Heading ──────────────────────────────────────────────────── */
         .ivq-header { text-align: center; }
         .ivq-title {
-            font-size: clamp(1.7rem, 8.3vh, 3.75rem);
+            font-size: var(--bec-title-size);
             font-weight: 800;
-            letter-spacing: -0.03em;
-            line-height: 1.02;
-            background: linear-gradient(92deg, #3730a3 0%, #1d4ed8 55%, #2563eb 100%);
+            letter-spacing: -0.02em;
+            line-height: 1.12;
+            background: linear-gradient(100deg, var(--bec-brand), #3b82f6);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
         .dark .ivq-title {
-            background: linear-gradient(92deg, #a5b4fc 0%, #93c5fd 100%);
+            background: linear-gradient(100deg, #818cf8, #60a5fa);
             -webkit-background-clip: text;
             background-clip: text;
         }
         .ivq-sub {
             margin: clamp(0.25rem, 0.8vh, 0.5rem) 0 0;
-            font-size: clamp(0.9rem, 2.9vh, 1.35rem);
+            font-size: var(--bec-sub-size);
             font-weight: 600;
             color: var(--ivq-sub);
         }
 
         /* ── Unified stat panel: Progress / Correct / Mistakes / Time ──── */
         .ivq-stats {
-            width: min(1060px, 100%);
+            width: min(var(--bec-w-standard), 100%);
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             background: var(--bec-surface);
@@ -192,7 +199,7 @@
         .ivq-ico svg { display: block; }
         .ivq-stat-label {
             display: block;
-            font-size: clamp(0.6rem, 1.85vh, 0.85rem);
+            font-size: var(--bec-stat-label-size);
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.12em;
@@ -202,7 +209,7 @@
         }
         .ivq-stat-value {
             display: block;
-            font-size: clamp(1.05rem, 3.9vh, 1.8rem);
+            font-size: var(--bec-stat-value-size);
             font-weight: 900;
             color: var(--bec-text);
             font-variant-numeric: tabular-nums;
@@ -215,14 +222,14 @@
 
         /* ── Quiz card ────────────────────────────────────────────────── */
         .ivq-card {
-            width: min(1060px, 100%);
+            width: min(var(--bec-w-quiz), 92%);
             display: flex;
             flex-direction: column;
             gap: clamp(0.55rem, 1.6vh, 0.9rem);
             padding: clamp(1.1rem, 3vh, 1.6rem) clamp(1.3rem, 3.6vw, 2.4rem);
             background: var(--bec-surface);
             border: 1px solid var(--bec-border);
-            border-radius: 1.75rem;
+            border-radius: var(--bec-card-radius);
             box-shadow: var(--ivq-card-shadow);
         }
 
@@ -234,7 +241,7 @@
             color: var(--ivq-label);
             border-radius: 9999px;
             padding: clamp(0.45rem, 1.2vh, 0.7rem) clamp(1rem, 2.6vw, 1.7rem);
-            font-size: clamp(0.8rem, 2.8vh, 1.45rem);
+            font-size: var(--bec-instruction-size);
             font-weight: 800;
             white-space: nowrap;
         }
@@ -246,7 +253,7 @@
             color: var(--ivq-count-text);
             border-radius: 9999px;
             padding: clamp(0.42rem, 1.3vh, 0.62rem) clamp(0.9rem, 2.2vw, 1.4rem);
-            font-size: clamp(0.7rem, 1.95vh, 0.95rem);
+            font-size: clamp(0.68rem, 1.5vh, 0.84rem);
             font-weight: 800;
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
@@ -268,7 +275,7 @@
 
         .ivq-question {
             margin: clamp(0.35rem, 1.5vh, 0.9rem) 0;
-            font-size: clamp(1.1rem, 5.1vh, 2.3rem);
+            font-size: var(--bec-question-size);
             font-weight: 800;
             letter-spacing: -0.01em;
             line-height: 1.25;
@@ -287,14 +294,14 @@
             align-items: center;
             text-align: left;
             gap: 0.55em;
-            min-height: clamp(3rem, 8.5vh, 4.2rem);
+            min-height: clamp(2.9rem, 7.2vh, 4.1rem);
             padding: clamp(0.6rem, 1.7vh, 0.9rem) clamp(1rem, 2.8vw, 1.7rem);
             border: 1.5px solid var(--ivq-ans-border);
             border-radius: 1.05rem;
             background: var(--ivq-ans-bg);
             color: var(--ivq-ans-text);
             font-family: inherit;
-            font-size: clamp(0.85rem, 3.25vh, 1.6rem);
+            font-size: var(--bec-ans-size);
             font-weight: 700;
             line-height: 1.3;
             cursor: pointer;
@@ -345,12 +352,12 @@
             align-items: center;
             justify-content: center;
             gap: 0.55rem;
-            min-height: clamp(2.5rem, 7.4vh, 3.85rem);
+            min-height: clamp(2.5rem, 6.8vh, 3.75rem);
             padding: clamp(0.55rem, 1.6vh, 0.85rem) clamp(1.1rem, 3vw, 1.9rem);
             border-radius: 9999px;
             border: 1px solid transparent;
             font-family: inherit;
-            font-size: clamp(0.8rem, 2.55vh, 1.3rem);
+            font-size: var(--bec-btn-size);
             font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
@@ -378,9 +385,10 @@
         @media (max-width: 640px) {
             .ivq-answers { grid-template-columns: 1fr; }
             .ivq-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.6rem; }
-            .ivq-stat + .ivq-stat { border-left: none; }
-            .ivq-stat:nth-child(even) { border-left: 1px solid var(--bec-border); padding-left: 0.6rem; }
+            .ivq-stat + .ivq-stat::before { border-left: none; }
+            .ivq-stat:nth-child(even)::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; border-left: 1px solid var(--bec-border); }
             .ivq-stat:nth-child(n+3) { border-top: 1px solid var(--bec-border); padding-top: 0.6rem; }
+            .ivq-card { width: 100%; padding: 1rem 0.9rem; }
             .ivq-nav { flex-direction: column; align-items: stretch; }
             .ivq-btn { width: 100%; }
         }

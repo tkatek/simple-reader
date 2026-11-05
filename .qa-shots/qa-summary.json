@@ -1,0 +1,784 @@
+{
+  "passes": {
+    "mobile-390": [
+      {
+        "slide": 1,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 524,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 536
+        }
+      },
+      {
+        "slide": 2,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 635,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 635
+        }
+      },
+      {
+        "slide": 3,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 524,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 524
+        }
+      },
+      {
+        "slide": 4,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 666,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 667
+        }
+      },
+      {
+        "slide": 5,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 524,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 524
+        }
+      },
+      {
+        "slide": 6,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 1073,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 1073
+        }
+      },
+      {
+        "slide": 7,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 1102,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 1102
+        }
+      },
+      {
+        "slide": 8,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 796,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 796
+        }
+      },
+      {
+        "slide": 9,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 524,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 524
+        }
+      },
+      {
+        "slide": 10,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 4865,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 4865
+        }
+      },
+      {
+        "slide": 11,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 614,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 615
+        }
+      },
+      {
+        "slide": 12,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 1153,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 1153
+        }
+      },
+      {
+        "slide": 13,
+        "stageW": 390,
+        "stageH": 524,
+        "iframeW": 390,
+        "iframeH": 524,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 538
+        }
+      }
+    ],
+    "mobile-390x844": [
+      {
+        "slide": 1,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 704,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 704
+        }
+      },
+      {
+        "slide": 2,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 704,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 704
+        }
+      },
+      {
+        "slide": 3,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 704,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 704
+        }
+      },
+      {
+        "slide": 4,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 704,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 704
+        }
+      },
+      {
+        "slide": 5,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 704,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 704
+        }
+      },
+      {
+        "slide": 6,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 1073,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 1073
+        }
+      },
+      {
+        "slide": 7,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 1102,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 1102
+        }
+      },
+      {
+        "slide": 8,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 795,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 796
+        }
+      },
+      {
+        "slide": 9,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 793,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 793
+        }
+      },
+      {
+        "slide": 10,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 4865,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 4865
+        }
+      },
+      {
+        "slide": 11,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 704,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 704
+        }
+      },
+      {
+        "slide": 12,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 1152,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 1153
+        }
+      },
+      {
+        "slide": 13,
+        "stageW": 390,
+        "stageH": 704,
+        "iframeW": 390,
+        "iframeH": 704,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 390,
+          "scrollW": 390,
+          "scrollH": 704
+        }
+      }
+    ],
+    "se-320": [
+      {
+        "slide": 1,
+        "stageW": 320,
+        "stageH": 428,
+        "iframeW": 320,
+        "iframeH": 616,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 320,
+          "scrollW": 320,
+          "scrollH": 617
+        }
+      },
+      {
+        "slide": 3,
+        "stageW": 320,
+        "stageH": 428,
+        "iframeW": 320,
+        "iframeH": 471,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 320,
+          "scrollW": 320,
+          "scrollH": 471
+        }
+      },
+      {
+        "slide": 4,
+        "stageW": 320,
+        "stageH": 428,
+        "iframeW": 320,
+        "iframeH": 639,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 320,
+          "scrollW": 320,
+          "scrollH": 640
+        }
+      },
+      {
+        "slide": 7,
+        "stageW": 320,
+        "stageH": 428,
+        "iframeW": 320,
+        "iframeH": 1048,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 320,
+          "scrollW": 320,
+          "scrollH": 1048
+        }
+      },
+      {
+        "slide": 12,
+        "stageW": 320,
+        "stageH": 428,
+        "iframeW": 320,
+        "iframeH": 1403,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 320,
+          "scrollW": 320,
+          "scrollH": 1403
+        }
+      },
+      {
+        "slide": 13,
+        "stageW": 320,
+        "stageH": 428,
+        "iframeW": 320,
+        "iframeH": 529,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 320,
+          "scrollW": 320,
+          "scrollH": 529
+        }
+      }
+    ],
+    "ipad-768": [
+      {
+        "slide": 1,
+        "stageW": 810,
+        "stageH": 940,
+        "iframeW": 810,
+        "iframeH": 940,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 810,
+          "scrollW": 810,
+          "scrollH": 940
+        }
+      },
+      {
+        "slide": 3,
+        "stageW": 810,
+        "stageH": 940,
+        "iframeW": 810,
+        "iframeH": 940,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 810,
+          "scrollW": 810,
+          "scrollH": 940
+        }
+      },
+      {
+        "slide": 4,
+        "stageW": 810,
+        "stageH": 940,
+        "iframeW": 810,
+        "iframeH": 1101,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 810,
+          "scrollW": 810,
+          "scrollH": 1101
+        }
+      },
+      {
+        "slide": 10,
+        "stageW": 810,
+        "stageH": 940,
+        "iframeW": 810,
+        "iframeH": 1514,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 810,
+          "scrollW": 810,
+          "scrollH": 1514
+        }
+      }
+    ],
+    "desktop-1440": [
+      {
+        "slide": 1,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 2,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 3,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 4,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 5,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 6,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 7,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 8,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 9,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 10,
+        "stageW": 1120,
+        "stageH": 760,
+        "iframeW": 1120,
+        "iframeH": 1094,
+        "stageHOverflow": false,
+        "stageScrolls": true,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1120,
+          "scrollW": 1120,
+          "scrollH": 1094
+        }
+      },
+      {
+        "slide": 11,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 12,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      },
+      {
+        "slide": 13,
+        "stageW": 1112,
+        "stageH": 760,
+        "iframeW": 1112,
+        "iframeH": 626,
+        "stageHOverflow": false,
+        "stageScrolls": false,
+        "docHOverflow": false,
+        "doc": {
+          "viewportW": 1280,
+          "scrollW": 1280,
+          "scrollH": 720
+        }
+      }
+    ]
+  },
+  "functional": {
+    "quiz2": {
+      "correctHighlighted": true,
+      "progress": "1/4",
+      "feedback": "Correct! Well done."
+    },
+    "tapToPlace": {
+      "chipSelected": true,
+      "gap1Label": "Gap 1: account",
+      "progressAfterPlace": "1/9",
+      "feedback": "8 blanks left to fill."
+    },
+    "startAgain": {
+      "currentSlide": 0
+    },
+    "theme": {
+      "dark": true
+    },
+    "zoom": {
+      "afterPlus": "110%",
+      "afterMinus": "100%"
+    },
+    "sidebarJump": {
+      "currentSlide": 9
+    }
+  },
+  "consoleErrors": {
+    "mobile-390": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "mobile-390x844": [],
+    "se-320": [],
+    "ipad-768": [],
+    "desktop-1440": []
+  }
+}

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="bec.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -35,6 +36,13 @@
             }
 
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -63,7 +71,7 @@
             --muted: #475569;
             --ph-fill: #ecebf7;
             --ph-icon: #8f8cbd;
-            --bg: #f7f7fa;
+            --bg: #f3f4fb;
             position: relative;
             min-height: 100dvh;
             background-color: var(--bg);

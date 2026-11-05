@@ -27,6 +27,13 @@
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -54,18 +61,18 @@
         /* Header */
         .obj3-header { text-align: center; }
         .obj3-title {
-            font-size: clamp(1.9rem, 5vh, 3.05rem);
+            font-size: var(--bec-title-size);
             font-weight: 800;
-            letter-spacing: -0.03em;
-            line-height: 1.1;
-            background: linear-gradient(92deg, #4f46e5, #8b5cf6);
+            letter-spacing: -0.02em;
+            line-height: 1.12;
+            background: linear-gradient(100deg, var(--bec-brand), #3b82f6);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
         .obj3-sub {
-            margin-top: clamp(0.45rem, 1.1vh, 0.72rem);
-            font-size: clamp(0.86rem, 2vh, 1.12rem);
+            margin-top: clamp(0.4rem, 1.1vh, 0.72rem);
+            font-size: var(--bec-sub-size);
             font-weight: 600;
             color: #64748b;
         }
@@ -75,7 +82,7 @@
             display: flex;
             flex-direction: column;
             gap: clamp(0.68rem, 1.9vh, 1.18rem);
-            width: min(730px, 100%);
+            width: min(var(--bec-w-standard), 100%);
         }
         .obj3-card {
             display: flex;
@@ -133,7 +140,7 @@
         .obj3-glow .g3 { width: 24rem; height: 24rem; bottom: -9rem; left: 8%; background: rgba(139, 92, 246, 0.09); }
 
         /* Dark mode (reader theme sync) */
-        .dark .obj3-title { background: linear-gradient(92deg, #818cf8 10%, #a78bfa 60%, #c4b5fd 100%); -webkit-background-clip: text; background-clip: text; }
+        .dark .obj3-title { background: linear-gradient(100deg, #818cf8, #60a5fa); -webkit-background-clip: text; background-clip: text; }
         .dark .obj3-sub { color: #94a3b8; }
         .dark .obj3-card { background: #1e293b; border-color: #334155; box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.55); }
         .dark .obj3-text { color: #cbd5e1; }

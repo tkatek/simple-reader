@@ -27,6 +27,13 @@
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -71,7 +78,7 @@
 
         /* ── Stat panel (progress / correct / mistakes / time) ────────── */
         .tf-stats {
-            width: min(740px, 100%);
+            width: min(var(--bec-w-standard), 100%);
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             background: var(--bec-surface);
@@ -104,7 +111,7 @@
         .tf-ico svg { display: block; }
         .tf-stat-label {
             display: block;
-            font-size: clamp(0.52rem, 1.1vh, 0.64rem);
+            font-size: var(--bec-stat-label-size);
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.12em;
@@ -113,7 +120,7 @@
         }
         .tf-stat-value {
             display: block;
-            font-size: clamp(0.82rem, 1.9vh, 1.05rem);
+            font-size: var(--bec-stat-value-size);
             font-weight: 900;
             color: var(--bec-text);
             font-variant-numeric: tabular-nums;
@@ -123,7 +130,7 @@
 
         /* ── Exercise card ─────────────────────────────────────────────── */
         .tf-quiz {
-            width: min(740px, 100%);
+            width: min(var(--bec-w-standard), 100%);
             border-radius: 1rem;
             display: flex;
             flex-direction: column;
@@ -132,7 +139,7 @@
         }
         .tf-top { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem 0.75rem; flex-wrap: wrap; }
         .tf-top-left { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-        .tf-instruction { font-size: clamp(0.72rem, 1.5vh, 0.9rem); font-weight: 800; color: var(--bec-brand); }
+        .tf-instruction { font-size: var(--bec-instruction-size); font-weight: 800; color: var(--bec-brand); }
 
         /* ── Audio player row ──────────────────────────────────────────── */
         .tf-audio {
@@ -181,20 +188,20 @@
         /* ── Question & answers ────────────────────────────────────────── */
         .tf-question { display: flex; align-items: baseline; gap: 0.45rem; text-align: left; }
         .tf-qnum { flex: 0 0 auto; font-size: clamp(0.78rem, 1.8vh, 1rem); font-weight: 900; color: var(--bec-text); font-variant-numeric: tabular-nums; }
-        .tf-qtext { font-size: clamp(0.85rem, 2vh, 1.15rem); font-weight: 800; line-height: 1.45; color: var(--bec-text); }
+        .tf-qtext { font-size: var(--bec-question-size); font-weight: 800; line-height: 1.4; color: var(--bec-text); }
 
         .tf-answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
         .tf-ans {
             display: inline-flex;
             align-items: center;
             justify-content: flex-start;
-            min-height: clamp(2.2rem, 5vh, 3rem);
-            padding: 0.5rem 1rem;
-            border-radius: 0.7rem;
+            min-height: clamp(2.9rem, 7.2vh, 4.1rem);
+            padding: 0.6rem 1.2rem;
+            border-radius: 1rem;
             border: 1.5px solid var(--bec-border);
             background: var(--bec-surface);
             color: var(--bec-text);
-            font-size: clamp(0.78rem, 1.7vh, 0.95rem);
+            font-size: var(--bec-ans-size);
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -213,7 +220,7 @@
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: clamp(0.4rem, 1vw, 0.6rem);
         }
-        .tf-nav .bec-btn { width: 100%; padding: 0.5rem 0.4rem; font-size: clamp(0.6rem, 1.3vh, 0.74rem); }
+        .tf-nav .bec-btn { width: 100%; padding: 0.5rem 0.4rem; }
         .tf-btn-hint { background: var(--bec-brand-soft); color: var(--bec-brand); border-color: transparent; }
         .tf-btn-hint:hover { background: var(--bec-brand); color: #fff; }
         .tf-btn-ghost { background: var(--tf-ghost-bg); color: var(--tf-ghost-text); border-color: transparent; }
@@ -221,7 +228,24 @@
         .tf-arrow { margin-left: 0.25rem; }
 
         @media (max-width: 640px) {
+            /* Compact phone metrics so the whole exercise — question,
+               answers and all four controls — fits one screen. */
+            .bec-stage { gap: 0.6rem; padding-top: 16px; padding-bottom: 18px; }
+            .bec-title { margin-top: 0; }
+            /* Score panel: compact 2×2 grid instead of four tiny columns */
+            .tf-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.45rem; padding-block: 0.45rem; }
+            .tf-stat + .tf-stat { border-left: none; }
+            .tf-stat:nth-child(even) { border-left: 1px solid var(--bec-border); }
+            .tf-stat:nth-child(n+3) { border-top: 1px solid var(--bec-border); padding-top: 0.45rem; }
+            .tf-stat-value { font-size: 1.02rem; }
             .tf-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .tf-nav .bec-btn { min-height: 2.6rem; padding: 0.45rem 0.4rem; }
+            .tf-quiz { padding: 0.8rem 0.8rem; gap: 0.55rem; }
+            .tf-audio { padding: 0.35rem 0.5rem; }
+            .tf-qtext { font-size: 1.05rem; line-height: 1.35; }
+            .tf-ans { min-height: 2.7rem; padding: 0.5rem 0.9rem; }
+            .bec-feedback { min-height: 1.05rem; }
+            .tf-footer { padding-top: 0.45rem; }
         }
     </style>
 </head>

@@ -27,6 +27,13 @@
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -55,7 +62,7 @@
             align-items: stretch;
             justify-content: center;
             gap: clamp(1.2rem, 3.5vw, 3rem);
-            width: min(960px, 100%);
+            width: min(var(--bec-w-wide, 1152px), 100%);
             min-height: 0;
         }
 
@@ -69,8 +76,8 @@
         }
 
         .lang-title {
-            font-size: clamp(1.85rem, 5.2vh, 3.1rem);
-            font-weight: 900;
+            font-size: var(--bec-title-size);
+            font-weight: 800;
             letter-spacing: -0.02em;
             line-height: 1.1;
             background: linear-gradient(100deg, var(--bec-brand), #3b82f6);
@@ -82,7 +89,7 @@
 
         .lang-sub {
             margin-top: 0.4rem;
-            font-size: clamp(0.78rem, 1.7vh, 1rem);
+            font-size: var(--bec-sub-size);
             font-weight: 600;
             color: var(--bec-text-2);
         }
@@ -92,7 +99,7 @@
             display: flex;
             flex-direction: column;
             gap: clamp(0.5rem, 1.6vh, 0.95rem);
-            width: min(520px, 100%);
+            width: min(640px, 100%);
         }
 
         .lang-card {
@@ -100,8 +107,8 @@
             display: flex;
             align-items: center;
             gap: 0.85rem;
-            min-height: clamp(3.1rem, 7.8vh, 4.2rem);
-            padding: clamp(0.55rem, 1.8vh, 0.95rem) clamp(0.95rem, 2.2vw, 1.4rem);
+            min-height: clamp(3.2rem, 8.4vh, 4.6rem);
+            padding: clamp(0.7rem, 2vh, 1.1rem) clamp(1.05rem, 2.4vw, 1.6rem);
             background: var(--bec-surface);
             border: 1px solid var(--bec-border);
             border-radius: 1.35rem;
@@ -129,7 +136,7 @@
             flex: 1 1 auto;
             min-width: 0;
             text-align: left;
-            font-size: clamp(0.86rem, 2.05vh, 1.12rem);
+            font-size: clamp(0.95rem, 2.3vh, 1.3rem);
             font-weight: 700;
             color: var(--bec-text);
         }

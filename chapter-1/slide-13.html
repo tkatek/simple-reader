@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="bec.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -27,6 +28,13 @@
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -59,7 +67,7 @@
             --muted: #475569;
             --ph-fill: #ecebf7;
             --ph-icon: #8f8cbd;
-            --bg: #f7f7fa;
+            --bg: #f3f4fb;
             position: relative;
             min-height: 100dvh;
             background-color: var(--bg);
@@ -246,6 +254,7 @@
 
         /* Mobile — stack the two columns, keep everything centered & readable */
         @media (max-width: 880px) {
+            .thanks-wrap { padding: 24px 16px 32px; align-items: flex-start; }
             .thanks-grid {
                 grid-template-columns: 1fr;
                 justify-items: center;
@@ -255,6 +264,9 @@
             .thanks-photo { width: min(62vw, 40dvh, 320px); }
             .thanks-rule { margin-left: auto; margin-right: auto; }
             .thanks-content { max-width: 34rem; }
+            .thanks-title { font-size: clamp(2.4rem, 10vw, 3.4rem); }
+            .thanks-questions p { font-size: 1rem; }
+            .start-again { min-width: min(240px, 100%); min-height: 3rem; font-size: 1rem; }
         }
     </style>
 </head>

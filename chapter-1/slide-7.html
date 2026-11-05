@@ -27,6 +27,13 @@
                 useDark = saved ? saved === 'dark' : prefersDark;
             }
             document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
         })();
 
         window.setTheme = function setTheme(theme) {
@@ -50,7 +57,7 @@
            Fixed 1280×720 reader canvas; the reader scales it visually.
            Layout is px-true to the approved reference design. */
         .s7-slide {
-            --s7-bg: #ffffff;
+            --s7-bg: #f3f4fb;
             --s7-surface: #ffffff;
             --s7-border: #e9ecf6;
             --s7-shadow: 0 20px 45px -20px rgba(30, 34, 80, 0.22);
@@ -142,17 +149,25 @@
             letter-spacing: 0.1em;
         }
 
-        /* Title */
+        /* Title — standard BEC indigo→blue gradient heading */
         .s7-title {
             margin-top: 23px;
             text-align: center;
-            font-size: 40px;
+            font-size: var(--bec-title-size, 44px);
             line-height: 1.05;
             font-weight: 900;
             letter-spacing: 0.055em;
-            color: var(--s7-title-indigo);
+            background: linear-gradient(100deg, #4338ca, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
-        .s7-title .s7-accent { color: var(--s7-title-blue); }
+        .dark .s7-title {
+            background: linear-gradient(100deg, #818cf8, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        .s7-title .s7-accent { color: inherit; }
 
         /* Two exercise cards */
         .s7-grid {
@@ -258,6 +273,23 @@
             .s7-unitname { font-size: 20px; }
             .s7-title { font-size: 26px; letter-spacing: 0.02em; }
             .s7-inner { padding-top: 18px; padding-bottom: 26px; }
+        }
+        /* Very narrow phones: keep every bill row inside the card (no
+           horizontal overflow from nowrap amounts / wide totals). */
+        @media (max-width: 380px) {
+            .s7-inner { max-width: calc(100% - 20px); }
+            .s7-title { font-size: 23px; }
+            .s7-bill { padding: 14px; }
+            .s7-bill-name { font-size: 19px; }
+            .s7-bill-row { gap: 8px; font-size: 14.5px; }
+            .s7-bill-row strong { font-size: 14.5px; }
+            .s7-total { height: 42px; border-radius: 9px; }
+            .s7-total-label { font-size: 14px; letter-spacing: 0.1em; }
+            .s7-total-amount { font-size: 24px; }
+            .s7-qrow { gap: 12px; }
+            .s7-qnum { width: 34px; height: 32px; font-size: 19px; }
+            .s7-qtext { font-size: 15.5px; }
+            .s7-instruction { font-size: 18px; }
         }
     </style>
 </head>
