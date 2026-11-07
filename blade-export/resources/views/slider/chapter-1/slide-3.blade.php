@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Slide 03 — Learning Objectives: matches the approved reference design
+         (gradient title, subtitle, three tinted-badge cards: indigo / green / amber). -->
+    <style>
+        .obj3-stage { gap: clamp(1.2rem, 3.3vh, 2.2rem); }
+
+        /* Header */
+        .obj3-header { text-align: center; }
+        .obj3-title {
+            font-size: var(--bec-title-size);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.12;
+            background: linear-gradient(100deg, var(--bec-brand), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .obj3-sub {
+            margin-top: clamp(0.4rem, 1.1vh, 0.72rem);
+            font-size: var(--bec-sub-size);
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        /* Card list */
+        .obj3-list {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.68rem, 1.9vh, 1.18rem);
+            width: min(var(--bec-w-standard), 100%);
+        }
+        .obj3-card {
+            display: flex;
+            align-items: center;
+            gap: clamp(0.95rem, 2.2vh, 1.3rem);
+            padding: clamp(0.8rem, 2.1vh, 1.18rem) clamp(1.3rem, 3.3vh, 1.75rem);
+            background: #ffffff;
+            border: 1px solid #eef1f6;
+            border-radius: 1.05rem;
+            box-shadow: 0 10px 30px -14px rgba(15, 23, 42, 0.14);
+        }
+
+        /* Tinted number badge */
+        .obj3-badge {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(2.55rem, 5.5vh, 3.05rem);
+            height: clamp(2.55rem, 5.5vh, 3.05rem);
+            border-radius: 0.9rem;
+            background: var(--obj3-soft);
+            color: var(--obj3-tone);
+            font-size: clamp(0.9rem, 2.1vh, 1.1rem);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Text block */
+        .obj3-body { min-width: 0; display: flex; flex-direction: column; gap: 0.14rem; }
+        .obj3-eyebrow {
+            font-size: clamp(0.64rem, 1.4vh, 0.78rem);
+            font-weight: 800;
+            letter-spacing: 0.11em;
+            text-transform: uppercase;
+            color: var(--obj3-tone);
+        }
+        .obj3-text {
+            font-size: clamp(0.88rem, 2.1vh, 1.1rem);
+            font-weight: 500;
+            line-height: 1.45;
+            color: #334155;
+        }
+
+        /* Tones */
+        .tone-indigo { --obj3-tone: #4f46e5; --obj3-soft: #eef2ff; }
+        .tone-green  { --obj3-tone: #059669; --obj3-soft: #ecfdf5; }
+        .tone-amber  { --obj3-tone: #d97706; --obj3-soft: #fffbeb; }
+
+        /* Corner glows: lavender top-left, green right, violet bottom-left */
+        .obj3-glow { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+        .obj3-glow i { position: absolute; border-radius: 9999px; filter: blur(90px); }
+        .obj3-glow .g1 { width: 30rem; height: 30rem; top: -10rem; left: -10rem; background: rgba(99, 102, 241, 0.14); }
+        .obj3-glow .g2 { width: 26rem; height: 26rem; top: 28%; right: -9rem; background: rgba(16, 185, 129, 0.10); }
+        .obj3-glow .g3 { width: 24rem; height: 24rem; bottom: -9rem; left: 8%; background: rgba(139, 92, 246, 0.09); }
+
+        /* Dark mode (reader theme sync) */
+        .dark .obj3-title { background: linear-gradient(100deg, #818cf8, #60a5fa); -webkit-background-clip: text; background-clip: text; }
+        .dark .obj3-sub { color: #94a3b8; }
+        .dark .obj3-card { background: #1e293b; border-color: #334155; box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.55); }
+        .dark .obj3-text { color: #cbd5e1; }
+        .dark .tone-indigo { --obj3-soft: rgba(99, 102, 241, 0.2); }
+        .dark .tone-green  { --obj3-soft: rgba(16, 185, 129, 0.18); }
+        .dark .tone-amber  { --obj3-soft: rgba(245, 158, 11, 0.18); }
+        .dark .obj3-glow .g1 { opacity: 0.55; }
+        .dark .obj3-glow .g2 { opacity: 0.5; }
+        .dark .obj3-glow .g3 { opacity: 0.5; }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+    <div class="obj3-glow"><i class="g1"></i><i class="g2"></i><i class="g3"></i></div>
+
+    <div class="bec-stage obj3-stage">
+        <header class="obj3-header reveal">
+            <h1 class="obj3-title">Learning Objectives</h1>
+            <p class="obj3-sub">By the end of the lesson, you will be able to:</p>
+        </header>
+
+        <div class="obj3-list">
+            <div class="obj3-card tone-indigo reveal">
+                <span class="obj3-badge">01</span>
+                <div class="obj3-body">
+                    <span class="obj3-eyebrow">Community Places</span>
+                    <p class="obj3-text">Identify key places like the bank, library, and park.</p>
+                </div>
+            </div>
+            <div class="obj3-card tone-green reveal">
+                <span class="obj3-badge">02</span>
+                <div class="obj3-body">
+                    <span class="obj3-eyebrow">Asking Questions</span>
+                    <p class="obj3-text">Ask for and give directions using “Where is …?”</p>
+                </div>
+            </div>
+            <div class="obj3-card tone-amber reveal">
+                <span class="obj3-badge">03</span>
+                <div class="obj3-body">
+                    <span class="obj3-eyebrow">Simple Directions</span>
+                    <p class="obj3-text">Use directional phrases and different prepositions (e.g., “next to”) to describe locations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window.resetSlide = function resetSlide() {};
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.12, ease: 'power2.out', clearProps: 'all' });
+        }
+    });
+</script>
+</body>
+</html>

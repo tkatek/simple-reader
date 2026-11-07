@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <style>
+        /* ═══ Warm-up discussion template — replicated from the "Warm-up
+           Questions" reference slide (big italic gradient title + two
+           columns: white discussion card left, lavender-framed bills
+           photo right). Scoped to .warm-*, reuses .bec- tokens. ═══ */
+        .warm-slide {
+            /* Reference washes a soft lavender glow across the upper-left
+               corner over the near-white BEC surface. */
+            background:
+                radial-gradient(120% 90% at 8% 0%, rgba(228, 222, 253, 0.9) 0%, rgba(228, 222, 253, 0.35) 34%, transparent 62%),
+                var(--bec-bg);
+        }
+        .dark .warm-slide {
+            background:
+                radial-gradient(120% 90% at 8% 0%, rgba(99, 102, 241, 0.14) 0%, rgba(99, 102, 241, 0.05) 40%, transparent 68%),
+                var(--bec-bg);
+        }
+
+        /* ── Heading block ─────────────────────────────────────────── */
+        .warm-head { flex: 0 0 auto; text-align: center; }
+        .warm-title {
+            font-size: var(--bec-title-size);
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: -0.02em;
+            line-height: 1.06;
+            background: linear-gradient(94deg, #3105c0 0%, #4f46e5 48%, #2563eb 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .dark .warm-title {
+            background: linear-gradient(94deg, #8b5cf6 0%, #818cf8 48%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        .warm-sub {
+            margin-top: clamp(0.35rem, 1.4vh, 0.8rem);
+            font-size: var(--bec-sub-size);
+            font-weight: 600;
+            color: var(--warm-sub, #0e1233);
+        }
+        .dark .warm-sub { --warm-sub: #cbd5e1; }
+
+        /* ── Two-column composition ────────────────────────────────── */
+        .warm-grid {
+            flex: 1 1 auto;
+            min-height: 0;
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+            gap: clamp(0.9rem, 1.7vw, 1.6rem);
+            align-items: stretch;
+        }
+
+        /* ── LEFT: discussion card ─────────────────────────────────── */
+        .warm-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            background: var(--bec-surface);
+            border: 1px solid var(--bec-border);
+            border-radius: 1.5rem;
+            box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.16);
+            padding: clamp(1.05rem, 2.5vh, 1.6rem) clamp(1.1rem, 2.4vw, 1.55rem);
+            /* Inset from the right/bottom so the card sits a touch smaller
+               than its column; the top edge stays flush with the photo mat. */
+            margin-right: clamp(0.75rem, 2vw, 1.5rem);
+            margin-bottom: clamp(1.5rem, 4.5vh, 2.8rem);
+        }
+        .dark .warm-card { box-shadow: 0 14px 36px -18px rgba(0, 0, 0, 0.55); }
+
+        .warm-card-head { display: flex; align-items: center; gap: clamp(0.6rem, 1.4vw, 0.95rem); }
+        .warm-icon {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(2.6rem, 6.6vh, 3.5rem);
+            height: clamp(2.6rem, 6.6vh, 3.5rem);
+            border-radius: 22%;
+            background: linear-gradient(140deg, #7a10f5 0%, #5b35ea 55%, #6d5cf0 100%);
+            box-shadow: 0 10px 22px -10px rgba(101, 17, 236, 0.6);
+            color: #fff;
+        }
+        .warm-icon svg { width: 58%; height: 58%; }
+        .warm-card-label {
+            min-width: 0;
+            margin-right: auto;
+            font-size: clamp(0.85rem, 2.1vh, 1.12rem);
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            text-transform: uppercase;
+            color: #2e0abe;
+        }
+        .dark .warm-card-label { color: #a78bfa; }
+        .warm-count {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: clamp(5rem, 10vw, 6rem);
+            height: clamp(2.2rem, 5.2vh, 2.8rem);
+            padding: 0 clamp(0.85rem, 1.7vw, 1.2rem);
+            border-radius: 1.05rem;
+            background: var(--warm-count-bg, #f3f2fd);
+            color: var(--warm-count-ink, #43506c);
+            font-size: clamp(0.8rem, 1.9vh, 1rem);
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .dark .warm-count { --warm-count-bg: rgba(99, 102, 241, 0.18); --warm-count-ink: #c7d2fe; }
+
+        .warm-rule {
+            flex: 0 0 auto;
+            height: 2px;
+            margin-top: clamp(0.7rem, 1.9vh, 1.05rem);
+            border-radius: 9999px;
+            background: linear-gradient(90deg, #2709d1, #4f46e5);
+        }
+        .dark .warm-rule { background: linear-gradient(90deg, #6d28d9, #818cf8); }
+
+        /* Question zone fills the middle of the card */
+        .warm-qzone {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.55rem, 1.8vh, 1rem);
+            text-align: center;
+            padding: clamp(0.5rem, 1.6vh, 1rem) 0;
+        }
+        .warm-q {
+            max-width: 30rem;
+            font-size: var(--bec-question-size);
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            line-height: 1.25;
+            color: var(--warm-q-ink, #060c40);
+        }
+        .dark .warm-q { --warm-q-ink: #f1f5f9; }
+        .warm-q-hint {
+            font-size: clamp(0.8rem, 1.9vh, 1rem);
+            font-weight: 600;
+            color: var(--bec-text-2);
+        }
+
+        /* ── Navigation buttons + dots ─────────────────────────────── */
+        .warm-nav {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: clamp(1.5rem, 4.4vw, 3.1rem);
+            margin-top: clamp(0.5rem, 1.4vh, 0.9rem);
+        }
+        .warm-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            height: clamp(2.6rem, 6.8vh, 3.75rem);
+            padding: 0 clamp(1.25rem, 2.9vw, 2.05rem);
+            border: none;
+            border-radius: 9999px;
+            font-family: inherit;
+            font-size: clamp(0.85rem, 2.1vh, 1.1rem);
+            font-weight: 800;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: filter 0.2s ease, transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+        }
+        .warm-btn:active { transform: scale(0.97); }
+        .warm-btn-prev {
+            background: var(--warm-prev-bg, #e8ecf5);
+            color: var(--warm-prev-ink, #8f95a3);
+        }
+        .warm-btn-prev:hover { filter: brightness(0.96); }
+        .warm-btn-prev[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+        .dark .warm-btn-prev { --warm-prev-bg: #334155; --warm-prev-ink: #94a3b8; }
+        .warm-btn-next {
+            padding: 0 clamp(1.6rem, 3.6vw, 2.55rem);
+            background: linear-gradient(95deg, #4631e9 0%, #6029f1 100%);
+            color: #fff;
+            box-shadow: 0 12px 26px -10px rgba(80, 30, 235, 0.55);
+        }
+        .warm-btn-next:hover { filter: brightness(1.08); box-shadow: 0 14px 30px -10px rgba(80, 30, 235, 0.65); }
+        .warm-btn-next[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none; }
+        .warm-btn-next .arr {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.65em;
+            height: 1.65em;
+            border-radius: 9999px;
+            background: #ffffff;
+            color: #4f46e5;
+            flex: none;
+        }
+
+        .warm-dots {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: clamp(0.7rem, 1.9vw, 1.05rem);
+            margin-top: clamp(0.7rem, 2.2vh, 1.15rem);
+        }
+        .warm-dot {
+            width: clamp(0.7rem, 1.9vh, 0.95rem);
+            height: clamp(0.7rem, 1.9vh, 0.95rem);
+            border-radius: 9999px;
+            border: none;
+            padding: 0;
+            background: var(--warm-dot-off, #d9d3fc);
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+        .warm-dot:hover { transform: scale(1.15); }
+        .warm-dot.is-active { background: var(--warm-dot-on, #3f27e0); }
+        .dark .warm-dot { --warm-dot-off: rgba(148, 163, 184, 0.3); --warm-dot-on: #818cf8; }
+
+        /* ── RIGHT: framed bills photograph ──────────────────────────
+           The lavender mat aligns with the card's top edge and covers
+           ~82% of its height; a same-tone block offset toward the
+           bottom-right sits behind it (matches the reference). */
+        .warm-photo { position: relative; min-width: 0; min-height: 0; }
+        .warm-mat, .warm-backdrop {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 82%;
+            border-radius: clamp(1.1rem, 2.6vw, 1.6rem);
+        }
+        .warm-backdrop {
+            transform: translate(7.5%, 12.5%);
+            background: var(--warm-lav, #e2ddf9);
+            box-shadow: 0 18px 40px -22px rgba(30, 27, 75, 0.28);
+        }
+        .warm-mat {
+            display: flex;
+            padding: clamp(0.55rem, 1.2vw, 0.85rem);
+            background: var(--warm-lav, #e6e2fd);
+            box-shadow: 0 18px 40px -22px rgba(30, 27, 75, 0.28);
+        }
+        .dark .warm-mat, .dark .warm-backdrop { --warm-lav: rgba(99, 102, 241, 0.22); }
+        .warm-mat img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: calc(clamp(1.1rem, 2.6vw, 1.6rem) - 0.45rem);
+        }
+
+        /* ── Entrance (CSS keyframes, safe with throttled clocks) ──── */
+        .reveal { animation: warm-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+        .warm-settled .reveal { animation: none; }
+        .warm-head   { animation-delay: 0.05s; }
+        .warm-card   { animation-delay: 0.18s; }
+        .warm-photo  { animation-delay: 0.30s; }
+        @keyframes warm-rise {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { animation: none; }
+        }
+
+        /* ── Phone: stack card above photo, allow vertical scroll ──── */
+        @media (max-width: 820px) {
+            .bec-slide { height: auto; min-height: 100dvh; overflow-y: auto; }
+            .bec-stage { justify-content: flex-start; }
+            .warm-grid { grid-template-columns: 1fr; gap: 0.9rem; }
+            /* Card runs edge to edge of the content width on phones. */
+            .warm-card { margin-right: 0; margin-bottom: 0; padding: 0.9rem 0.95rem 0.8rem; }
+            .warm-photo { order: 2; min-height: 60vw; }
+            .warm-mat, .warm-backdrop { position: relative; height: auto; aspect-ratio: 580 / 475; width: 100%; }
+            /* 6% left offset + 94% width + no translate = exactly the
+               container width. The base rule's translate(7.5%, 12.5%) must
+               be reset here — stacked on the left offset it pushed the
+               block past the right edge and created horizontal scroll. */
+            .warm-backdrop { position: absolute; top: 9%; left: 6%; width: 94%; transform: none; }
+            .warm-photo { padding-bottom: 9%; }
+            /* Compact vertical rhythm so the photo's bottom edge lands on
+               one phone screen instead of a few pixels below it. The gap
+               override needs !important — the stage gap is an inline style. */
+            .warm-slide .bec-stage { padding-top: 16px; padding-bottom: 16px; gap: 0.7rem !important; }
+            .warm-rule { margin-top: 0.55rem; }
+            .warm-qzone { padding: 0.4rem 0; }
+            .warm-nav { margin-top: 0.4rem; }
+            .warm-dots { margin-top: 0.5rem; }
+        }
+        /* ── Small phones: nav buttons share the row, tighter card head ── */
+        @media (max-width: 480px) {
+            .warm-nav { gap: 0.5rem; }
+            .warm-btn { flex: 1 1 0; min-width: 0; padding: 0 0.75rem; font-size: 0.88rem; }
+            .warm-btn-next { padding: 0 0.9rem; }
+            .warm-btn-next .arr { width: 1.4em; height: 1.4em; }
+            .warm-card-label { font-size: 0.82rem; }
+            .warm-count { min-width: 0; padding: 0 0.7rem; font-size: 0.78rem; }
+            .warm-icon { width: 2.5rem; height: 2.5rem; }
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide warm-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage" style="gap: clamp(0.7rem, 2.2vh, 1.4rem)">
+        <header class="bec-header warm-head reveal">
+            <h1 class="warm-title">Warm-up Questions</h1>
+            <p class="warm-sub">Talk about these questions with your teacher.</p>
+        </header>
+
+        <div class="warm-grid">
+            <!-- LEFT — teacher-led discussion card (one question at a time, no scoring) -->
+            <section class="bec-card warm-card reveal" aria-label="Discussion questions">
+                <div class="warm-card-head">
+                    <span class="warm-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                    </span>
+                    <p class="warm-card-label">Discuss together</p>
+                    <span class="warm-count" id="q-count">1 of 3</span>
+                </div>
+
+                <div class="warm-rule" aria-hidden="true"></div>
+
+                <div class="warm-qzone">
+                    <p class="warm-q" id="q-text">What kind of bills can you see?</p>
+                    <p class="warm-q-hint">Look at the picture and share your ideas.</p>
+                </div>
+
+                <div class="warm-nav">
+                    <button class="warm-btn warm-btn-prev" id="btn-prev" disabled>Previous Question</button>
+                    <button class="warm-btn warm-btn-next" id="btn-next">
+                        <span>Next Question</span>
+                        <span class="arr" aria-hidden="true">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="warm-dots" role="tablist" aria-label="Question selector">
+                    <button class="warm-dot is-active" data-q="0" aria-label="Question 1"></button>
+                    <button class="warm-dot" data-q="1" aria-label="Question 2"></button>
+                    <button class="warm-dot" data-q="2" aria-label="Question 3"></button>
+                </div>
+            </section>
+
+            <!-- RIGHT — household bills photograph (speaking prompt) -->
+            <aside class="warm-photo reveal" aria-label="Discussion picture">
+                <div class="warm-backdrop" aria-hidden="true"></div>
+                <figure class="warm-mat" style="margin:0">
+                    <img src="{{ asset('bec/chapter-1/bills-desk-photo.png') }}" alt="An overhead desk photograph with household bills, a smartphone and a laptop">
+                </figure>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<script>
+    const QUESTIONS = [
+        "What kind of bills can you see?",
+        "How often do you pay your bills?",
+        "Do you need to go the bank to pay your bills?"
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const $ = (id) => document.getElementById(id);
+        let current = 0;
+        const dots = Array.from(document.querySelectorAll('.warm-dot'));
+
+        function render() {
+            $('q-text').textContent = QUESTIONS[current];
+            $('q-count').textContent = `${current + 1} of ${QUESTIONS.length}`;
+            $('btn-prev').disabled = current === 0;
+            $('btn-next').disabled = current === QUESTIONS.length - 1;
+            dots.forEach((d, i) => {
+                d.classList.toggle('is-active', i === current);
+                d.setAttribute('aria-current', i === current ? 'true' : 'false');
+            });
+        }
+
+        $('btn-next').addEventListener('click', () => { if (current < QUESTIONS.length - 1) { current++; render(); } });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; render(); } });
+        dots.forEach((d) => d.addEventListener('click', () => { current = Number(d.dataset.q); render(); }));
+
+        // Reader lifecycle: reset returns to question 1 and replays the entrance.
+        window.resetSlide = function resetSlide() {
+            current = 0;
+            render();
+            document.documentElement.classList.remove('warm-settled');
+            document.querySelectorAll('.reveal').forEach((el) => {
+                el.style.animation = 'none';
+                void el.offsetWidth;
+                el.style.animation = '';
+            });
+            setTimeout(() => document.documentElement.classList.add('warm-settled'), 2500);
+        };
+        render();
+        setTimeout(() => document.documentElement.classList.add('warm-settled'), 2500);
+    });
+</script>
+</body>
+</html>

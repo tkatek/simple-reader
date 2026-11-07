@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
+                    }
+                }
+            }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <style>
+        /* ═══ BEC two-column introduction template — replicated from the
+           "Mystery Solved!" reference slide (unit row + lesson capsule +
+           big gradient title + Start Session on the left, framed photo on
+           the right). Scoped to .intro only. ═══ */
+        .intro {
+            --surface: #ffffff;
+            --frame-border: rgba(99, 102, 241, 0.28);
+            --text: #0f172a;
+            --muted: #475569;
+            --ph-fill: #ecebf7;
+            --ph-icon: #8f8cbd;
+            --bg: #f3f4fb;
+            position: relative;
+            min-height: 100dvh;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui;
+        }
+        .dark .intro {
+            --surface: #1e293b;
+            --frame-border: rgba(129, 140, 248, 0.35);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --ph-fill: #312e81;
+            --ph-icon: #818cf8;
+            --bg: #0f172a;
+        }
+
+        /* Background: near-white base with two very subtle atmospheric glows */
+        .intro-bg { pointer-events: none; position: fixed; inset: 0; z-index: 0; }
+        .intro-bg .glow-a {
+            position: absolute; top: -18%; left: -10%; width: 46vw; height: 46vw; border-radius: 9999px;
+            background: radial-gradient(circle, rgba(139, 124, 243, 0.12) 0%, rgba(139, 124, 243, 0.05) 45%, transparent 70%);
+        }
+        .intro-bg .glow-b {
+            position: absolute; bottom: -20%; right: -10%; width: 42vw; height: 42vw; border-radius: 9999px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.10) 0%, rgba(59, 130, 246, 0.04) 45%, transparent 70%);
+        }
+        .dark .intro-bg .glow-a { background: radial-gradient(circle, rgba(139, 124, 243, 0.10) 0%, rgba(139, 124, 243, 0.04) 45%, transparent 70%); }
+        .dark .intro-bg .glow-b { background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.03) 45%, transparent 70%); }
+
+        .intro-wrap {
+            position: relative;
+            z-index: 10;
+            min-height: 100dvh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            /* Reference positions: text/photo block starts ~15%H from the top
+               and ~7.5%W from the left (upper-middle composition). */
+            padding: clamp(3.2rem, 15vh, 9rem) clamp(2rem, 7.5vw, 7rem) clamp(1rem, 3vh, 2rem);
+        }
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1.12fr 0.88fr;
+            align-items: start;
+            gap: clamp(1rem, 2.5vw, 2.25rem);
+            /* Reference keeps text + photo as one compact centered group
+               (~62% of the stage), not stretched edge to edge. */
+            width: min(100%, 62.5rem);
+        }
+        @media (max-width: 760px) {
+            .intro-wrap { padding-top: clamp(1.6rem, 8vh, 3rem); }
+            .intro-grid { grid-template-columns: 1fr; gap: clamp(1.2rem, 3.5vh, 2rem); text-align: center; }
+            .intro-photo { width: min(58vw, 240px) !important; margin: 0 auto; }
+            .unit-row, .lesson-pill-row { justify-content: center; }
+        }
+
+        /* LEFT — unit row: compact badge + circular separator + unit name */
+        .unit-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        .unit-tag {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 0.4rem;
+            background: linear-gradient(100deg, #4f46e5, #6366f1);
+            color: #fff;
+            padding: 0.3rem 0.75rem;
+            font-size: clamp(0.58rem, 1.25vh, 0.74rem);
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            box-shadow: 0 8px 16px -8px rgba(79, 70, 229, 0.55);
+        }
+        .unit-dot { width: 0.34rem; height: 0.34rem; border-radius: 9999px; background: #6366f1; flex: none; }
+        .unit-name {
+            font-size: clamp(0.9rem, 2.1vh, 1.15rem);
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: var(--text);
+        }
+
+        /* LEFT — lesson capsule */
+        .lesson-pill-row { display: flex; margin-top: clamp(0.5rem, 1.8vh, 0.9rem); }
+        .lesson-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 0.4rem;
+            border: 1px solid var(--frame-border);
+            background: var(--surface);
+            color: var(--text);
+            padding: 0.28rem 0.8rem;
+            font-size: clamp(0.56rem, 1.2vh, 0.72rem);
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px -6px rgba(15, 23, 42, 0.18);
+        }
+
+        /* LEFT — title, one uniform BEC indigo→blue gradient */
+        .intro-title {
+            margin: clamp(0.8rem, 3vh, 1.5rem) 0 0;
+            font-size: clamp(2.7rem, 10.6vh, 6.1rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1.04;
+            background: linear-gradient(95deg, #4338ca 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* LEFT — lesson idiom, compact quotation under the title.
+           The plain-language meaning stays in the reader's Teacher Cue. */
+        .intro-idiom {
+            margin: clamp(0.5rem, 1.8vh, 1rem) 0 0;
+            max-width: 34rem;
+            font-size: clamp(0.85rem, 2.3vh, 1.15rem);
+            font-weight: 600;
+            font-style: italic;
+            line-height: 1.45;
+            color: var(--muted);
+        }
+
+        /* LEFT — Start Session button */
+        .start-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: clamp(0.7rem, 1.7vw, 1.1rem);
+            margin-top: clamp(1.2rem, 5.5vh, 2.6rem);
+            border: none;
+            cursor: pointer;
+            border-radius: 9999px;
+            background: linear-gradient(100deg, #5a4be0, #3b82f6);
+            color: #fff;
+            padding: 0.45rem 0.45rem 0.45rem 1.7rem;
+            font-family: inherit;
+            font-size: clamp(0.88rem, 2.2vh, 1.14rem);
+            font-weight: 700;
+            box-shadow: 0 14px 28px -10px rgba(76, 88, 244, 0.55);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+        .start-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.06);
+            box-shadow: 0 18px 32px -10px rgba(76, 88, 244, 0.65);
+        }
+        .start-btn:active { transform: scale(0.97); }
+        .start-btn .arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.1em;
+            height: 2.1em;
+            border-radius: 9999px;
+            background: #ffffff;
+            color: #4338ca;
+            flex: none;
+            transition: transform 0.25s ease;
+        }
+        .start-btn:hover .arrow { transform: translateX(3px); }
+
+        /* RIGHT — framed lesson photo: white outer frame, thin accent border,
+           soft glow, large rounded corners, square-ish proportions. The photo
+           is cropped from the approved Canva lesson artwork (payment with a
+           smartphone and bank card). */
+        .intro-photo {
+            position: relative;
+            width: min(30vw, 52vh, 340px);
+            aspect-ratio: 1 / 1;
+            justify-self: center;
+            border-radius: clamp(1.4rem, 3vw, 1.9rem);
+            background: var(--surface);
+            padding: clamp(0.5rem, 1.2vw, 0.7rem);
+            border: 1px solid var(--frame-border);
+            box-shadow: 0 0 0 7px rgba(99, 102, 241, 0.10), 0 30px 60px -25px rgba(30, 41, 59, 0.35);
+        }
+        .intro-photo-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: calc(clamp(1.4rem, 3vw, 1.9rem) - 0.45rem);
+            background: var(--ph-fill);
+            overflow: hidden;
+        }
+        .intro-photo-inner img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: 50% 40%;
+        }
+
+        /* Entrance: CSS keyframes with fill-mode "backwards" — the resting
+           state is fully visible, so a throttled animation clock can never
+           leave content stuck invisible (worst case: no entrance). */
+        .reveal { animation: intro-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+        .intro-settled .reveal { animation: none; }
+        .unit-row       { animation-delay: 0.05s; }
+        .lesson-pill-row { animation-delay: 0.15s; }
+        .intro-title    { animation-delay: 0.28s; }
+        .intro-idiom    { animation-delay: 0.34s; }
+        #btn-start      { animation-delay: 0.42s; }
+        .intro-photo    { animation-delay: 0.35s; }
+        @keyframes intro-rise {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { animation: none; }
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="intro">
+    <div class="intro-bg">
+        <div class="glow-a"></div>
+        <div class="glow-b"></div>
+    </div>
+
+    <div class="intro-wrap">
+        <div class="intro-grid">
+            <!-- LEFT column — lesson information -->
+            <div style="min-width:0">
+                <div class="unit-row reveal">
+                    <span class="unit-tag">Unit 4</span>
+                    <span class="unit-dot"></span>
+                    <span class="unit-name">Home and Daily Needs</span>
+                </div>
+
+                <div class="lesson-pill-row reveal">
+                    <span class="lesson-pill">Lesson 3</span>
+                </div>
+
+                <h1 class="intro-title reveal">Paying Bills</h1>
+
+                <p class="intro-idiom reveal">&ldquo;Cut your coat according to your cloth&rdquo;</p>
+
+                <button class="start-btn reveal" id="btn-start">
+                    <span>Start Session</span>
+                    <span class="arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </span>
+                </button>
+            </div>
+
+            <!-- RIGHT column — framed lesson photo, cropped from the approved
+                 Canva lesson artwork (paying by smartphone with a bank card) -->
+            <div class="intro-photo reveal">
+                <div class="intro-photo-inner">
+                    <img src="{{ asset('bec/chapter-1/paying-bills-intro.png') }}" alt="A person paying a bill on a smartphone while holding a bank card">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        function goToNextSlide() {
+            try {
+                if (window.parent && typeof window.parent.nextSlide === 'function') {
+                    window.parent.nextSlide();
+                    return;
+                }
+            } catch (e) {}
+
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'BEC_NAV', action: 'next' }, '*');
+                    return;
+                }
+            } catch (e) {}
+
+            window.location.href = 'slide-2.html';
+        }
+
+        const startBtn = document.getElementById('btn-start');
+        startBtn.addEventListener('click', goToNextSlide);
+
+        // Hard stop for the entrance so nothing can linger mid-fade
+        setTimeout(() => document.documentElement.classList.add('intro-settled'), 2500);
+
+        // Replay the CSS entrance when the reader calls resetSlide
+        window.resetSlide = function resetSlide() {
+            document.documentElement.classList.remove('intro-settled');
+            document.querySelectorAll('.reveal').forEach((el) => {
+                el.style.animation = 'none';
+                void el.offsetWidth; // reflow so the animation restarts
+                el.style.animation = '';
+            });
+            setTimeout(() => document.documentElement.classList.add('intro-settled'), 2500);
+        };
+    });
+</script>
+</body>
+</html>

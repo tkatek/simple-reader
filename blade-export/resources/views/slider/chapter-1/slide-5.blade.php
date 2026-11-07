@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        .vid-stage { display: flex; flex-direction: column; gap: clamp(0.6rem, 1.6vh, 1.1rem); width: 100%; height: 100%; justify-content: center; }
+        .vid-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        @media (max-width: 560px) { .vid-head { flex-direction: column; align-items: flex-start; } }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage">
+        <div class="vid-stage" style="max-width:880px">
+            <!-- Title row -->
+            <div class="vid-head reveal">
+                <div>
+                    <span class="bec-kicker">Slide 05 · Listening Video</span>
+                    <h1 class="bec-title" style="margin-top:0.45rem">Let’s watch this <span class="accent">video!</span></h1>
+                </div>
+                <button class="bec-btn bec-btn-soft" id="btn-script">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                    Read Script
+                </button>
+            </div>
+
+            <!-- ═══ TECH LEAD — VIDEO INTEGRATION ═════════════════════════
+                 Set VIDEO_SRC below to the hosted video URL, e.g.:
+                 const VIDEO_SRC = "https://your-host/videos/at-the-bank.mp4";
+                 The empty black area is replaced by the real video and the
+                 control bar activates automatically. Left empty, controls stay
+                 disabled — no thumbnails and no fake playback by design. -->
+            <div class="bec-video-card reveal" id="video-card">
+                <div class="bec-video-empty" id="video-empty"><span>Video — will be connected by your teacher</span></div>
+                <div class="bec-video-controls" id="video-controls">
+                    <button class="bec-vc-btn" id="vc-play" aria-label="Play video" tabindex="-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="vc-icon-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="vc-icon-pause" style="display:none"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>
+                    </button>
+                    <div class="bec-vc-track"><div class="bec-vc-fill" id="vc-fill"></div></div>
+                    <span class="bec-vc-time" id="vc-time">--:-- / --:--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script overlay: compact, no scrolling -->
+    <div class="bec-overlay" id="script-overlay">
+        <div class="bec-card bec-modal">
+            <div class="bec-modal-head">
+                <h2 class="bec-modal-title">Video script</h2>
+                <button class="bec-modal-close" id="script-close" aria-label="Close script">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="bec-modal-body" id="script-body">
+                <p class="bec-script-line"><span class="sp">Bank Teller:</span> Hello. How can I help you today?</p>
+                <p class="bec-script-line"><span class="sp">Customer:</span> Hi. I need to pay my electric bill.</p>
+                <p class="bec-script-line"><span class="sp">Bank Teller:</span> Sure. Do you have your bill with you?</p>
+                <p class="bec-script-line"><span class="sp">Customer:</span> Yes. Here it is.</p>
+                <p class="bec-script-line"><span class="sp">Bank Teller:</span> Thank you. Your total is $45.60. Will you pay by cash or card?</p>
+                <p class="bec-script-line"><span class="sp">Customer:</span> I’ll pay by card, please.</p>
+                <p class="bec-script-line"><span class="sp">Bank Teller:</span> OK. Please insert your card here. … All done! Here is your receipt.</p>
+                <p class="bec-script-line"><span class="sp">Customer:</span> Great, thank you!</p>
+                <p class="bec-script-line"><span class="sp">Bank Teller:</span> You’re welcome. Have a nice day!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ═══ TECH LEAD: set this to the hosted video URL to enable the player ═══ */
+    const VIDEO_SRC = "";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const $ = (id) => document.getElementById(id);
+        const overlay = $('script-overlay');
+        let video = null, playing = false;
+
+        function fmt(s) { return isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '--:--'; }
+
+        /* Player activates only when VIDEO_SRC is configured */
+        if (VIDEO_SRC) {
+            const card = $('video-card');
+            $('video-empty').remove();
+            video = document.createElement('video');
+            video.src = VIDEO_SRC;
+            card.prepend(video);
+            $('video-controls').classList.add('is-live');
+            video.addEventListener('loadedmetadata', () => { $('vc-time').textContent = `0:00 / ${fmt(video.duration)}`; });
+            video.addEventListener('timeupdate', () => {
+                $('vc-fill').style.width = `${(video.currentTime / video.duration) * 100 || 0}%`;
+                $('vc-time').textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
+            });
+            video.addEventListener('ended', () => setPlayIcon(false));
+            $('vc-play').addEventListener('click', () => {
+                if (playing) { video.pause(); setPlayIcon(false); }
+                else { video.play(); setPlayIcon(true); }
+            });
+            $('vc-play').removeAttribute('tabindex');
+        }
+        function setPlayIcon(p) {
+            playing = p;
+            const ip = document.querySelector('.vc-icon-play'), ipause = document.querySelector('.vc-icon-pause');
+            if (ip) ip.style.display = p ? 'none' : '';
+            if (ipause) ipause.style.display = p ? '' : 'none';
+        }
+
+        /* Script overlay */
+        $('btn-script').addEventListener('click', () => overlay.classList.add('is-open'));
+        $('script-close').addEventListener('click', () => overlay.classList.remove('is-open'));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.classList.remove('is-open'); });
+
+        window.stopSlideAudio = function stopSlideAudio() {
+            if (video) { video.pause(); setPlayIcon(false); }
+        };
+        window.resetSlide = function resetSlide() {
+            overlay.classList.remove('is-open');
+            if (video) { video.pause(); video.currentTime = 0; setPlayIcon(false); }
+        };
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
+        }
+    });
+</script>
+</body>
+</html>

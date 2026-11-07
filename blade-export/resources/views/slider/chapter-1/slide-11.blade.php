@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           Slide 11 — Vocabulary Check (large quiz layout)
+           Scoped overrides of the shared .bec-* theme for this slide only.
+           Sized against the reader's fixed 1280×720 slide canvas; clamps
+           keep it proportional when the file is viewed standalone.
+           ═══════════════════════════════════════════════════════════════ */
+        .bec-stage { gap: 0; }
+
+        /* Badge capsule */
+        .bec-kicker {
+            padding: clamp(0.4rem, 1.4vh, 0.55rem) clamp(1rem, 2.2vw, 1.5rem);
+            letter-spacing: 0.2em;
+            line-height: 1;
+        }
+
+        /* Gradient headline — the shared chapter title scale */
+        .bec-title {
+            margin-top: clamp(0.5rem, 2.4vh, 0.9rem);
+        }
+
+        /* Score panel (shared .bec-stats segmented panel from bec.css) */
+        .bec-stats { margin-top: clamp(1rem, 3.6vh, 1.6rem); }
+        .bec-stat-value { line-height: 1.1; }
+
+        /* Wide exercise card */
+        .bec-quiz {
+            width: min(var(--bec-w-quiz, 1080px), 92%);
+            max-width: 100%;
+            margin-top: clamp(1rem, 3.6vh, 1.7rem);
+            gap: 0;
+            padding: clamp(1.3rem, 4.4vh, 2.05rem) clamp(1.4rem, 3vw, 2.45rem);
+        }
+        .bec-quiz-instruction { font-size: var(--bec-instruction-size); }
+        .bec-qcount {
+            font-size: clamp(0.68rem, 1.5vh, 0.84rem);
+            padding: clamp(0.35rem, 1.4vh, 0.55rem) clamp(0.8rem, 1.6vw, 1.2rem);
+        }
+        .bec-progress {
+            height: clamp(0.5rem, 1.4vh, 0.68rem);
+            margin-top: clamp(0.7rem, 1.95vh, 1.1rem);
+        }
+        .dark .bec-progress { background: var(--bec-border); }
+
+        .bec-question {
+            max-width: 86%;
+            margin: clamp(1.2rem, 4.4vh, 2rem) auto 0;
+            font-size: var(--bec-question-size);
+            font-weight: 800;
+            line-height: 1.35;
+            letter-spacing: -0.01em;
+        }
+
+        /* Three equal answer buttons in one row */
+        .bec-answers {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: clamp(0.9rem, 2.6vw, 2.2rem);
+            margin-top: clamp(1.4rem, 5vh, 2.2rem);
+        }
+        .bec-ans {
+            min-height: clamp(2.9rem, 7.2vh, 4.1rem);
+            padding: clamp(0.6rem, 1.7vh, 0.95rem) clamp(0.9rem, 1.6vw, 1.3rem);
+            border-radius: 1rem;
+            border: 1.5px solid var(--bec-border);
+            font-size: var(--bec-ans-size);
+            font-weight: 700;
+            line-height: 1.25;
+        }
+        .bec-ans:hover { background: var(--bec-surface); }
+        .bec-ans.is-selected {
+            background: var(--bec-brand-soft);
+            border-color: var(--bec-brand);
+            color: var(--bec-brand);
+            font-weight: 800;
+            box-shadow: none;
+        }
+
+        .bec-feedback {
+            min-height: clamp(1.7rem, 4vh, 2.3rem);
+            margin-top: clamp(0.7rem, 1.7vh, 1.05rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.75rem, 1.8vh, 0.98rem);
+        }
+
+        /* Navigation row */
+        .bec-quiznav {
+            margin-top: clamp(0.7rem, 1.7vh, 1.05rem);
+            gap: clamp(0.9rem, 1.8vw, 1.8rem);
+        }
+        .bec-quiznav .bec-btn {
+            min-height: clamp(2.5rem, 6.8vh, 3.75rem);
+            min-width: clamp(8rem, 13vw, 10.5rem);
+            padding: clamp(0.55rem, 1.6vh, 0.85rem) clamp(1.1rem, 2.6vw, 1.9rem);
+            font-size: var(--bec-btn-size);
+            line-height: 1;
+        }
+        .bec-btn-primary {
+            background: linear-gradient(100deg, #4f46e5, #3b82f6);
+            box-shadow: 0 14px 28px -12px rgba(79, 70, 229, 0.55);
+        }
+        .bec-btn-muted { background: #f1f5f9; color: var(--bec-text-2); border-color: #e2e8f0; }
+        .bec-btn-muted:not([disabled]):hover { background: #e8edf5; border-color: var(--bec-brand); color: var(--bec-text); }
+        .dark .bec-btn-muted { background: rgba(148, 163, 184, 0.14); border-color: var(--bec-border); }
+
+        /* Narrow screens: compact sizing, stacked answers, scrollable stage */
+        @media (max-width: 640px) {
+            .bec-stage { justify-content: flex-start; align-items: stretch; overflow-y: auto; gap: 0.6rem; padding: 16px 16px 18px; }
+            .bec-header { text-align: center; }
+            .bec-kicker { font-size: 0.68rem; padding: 0.45rem 1rem; }
+            .bec-title { font-size: 1.9rem; margin-top: 0.45rem; }
+            .bec-stats { margin-top: 0.4rem; }
+            .bec-quiz { width: 100%; margin-top: 0.5rem; padding: 0.85rem 0.85rem; border-radius: 1.1rem; }
+            .bec-qcount { padding: 0.4rem 0.85rem; font-size: 0.7rem; }
+            .bec-progress { margin-top: 0.5rem; }
+            .bec-question { font-size: 1.08rem; margin-top: 0.6rem; max-width: 100%; }
+            .bec-answers { grid-template-columns: 1fr; gap: 0.6rem; margin-top: 0.8rem; }
+            .bec-ans { min-height: 2.7rem; font-size: 0.95rem; border-radius: 1rem; }
+            .bec-feedback { min-height: 1.05rem; margin-top: 0.4rem; font-size: 0.8rem; }
+            .bec-quiznav { margin-top: 0.45rem; gap: 0.6rem; }
+            .bec-quiznav .bec-btn { min-height: 2.6rem; min-width: 0; flex: 1 1 calc(50% - 0.6rem); font-size: 0.9rem; border-radius: 1rem; padding: 0.5rem 1rem; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage">
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 11 · Vocabulary Check</span>
+            <h1 class="bec-title bec-title-grad">Let’s do this quiz:</h1>
+        </div>
+
+        <div class="bec-stats bec-stats--3 reveal" role="group" aria-label="Exercise score">
+            <div class="bec-stat-cell">
+                <span class="bec-stat-ico is-good" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                </span>
+                <div><span class="bec-stat-label">Progress</span><span class="bec-stat-value" id="stat-progress">0/5</span></div>
+            </div>
+            <div class="bec-stat-cell is-good">
+                <span class="bec-stat-ico is-good" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                </span>
+                <div><span class="bec-stat-label">Correct</span><span class="bec-stat-value" id="stat-correct">0</span></div>
+            </div>
+            <div class="bec-stat-cell is-bad">
+                <span class="bec-stat-ico is-bad" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </span>
+                <div><span class="bec-stat-label">Mistakes</span><span class="bec-stat-value" id="stat-mistakes">0</span></div>
+            </div>
+        </div>
+
+        <div class="bec-card bec-quiz reveal">
+            <div class="bec-quiz-top">
+                <p class="bec-quiz-instruction">Choose the correct answer:</p>
+                <span class="bec-qcount" id="q-count">1 of 5</span>
+            </div>
+
+            <div class="bec-progress"><div class="bec-progress-fill" id="quiz-progress"></div></div>
+
+            <p class="bec-question" id="q-text">The amount of money you have in a bank is called</p>
+
+            <div class="bec-answers" id="answers"></div>
+
+            <p class="bec-feedback" id="feedback">&nbsp;</p>
+
+            <div class="bec-quiznav">
+                <button class="bec-btn bec-btn-outline" id="btn-restart">Restart Quiz</button>
+                <button class="bec-btn bec-btn-muted" id="btn-prev">Previous Question</button>
+                <button class="bec-btn bec-btn-primary" id="btn-next">Next Question</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* Question 3's intended answer is "withdraw", which the source slide omits
+       from its options — it is treated as a teacher-check item (never marked wrong). */
+    const QUESTIONS = [
+        { q: "The amount of money you have in a bank is called", opts: ["balance", "bank statement", "bank transfer"], answer: 0 },
+        { q: "When you move money from one bank to another is", opts: ["bank statement", "withdraw", "transfer"], answer: 2 },
+        { q: "To take out money from your bank account is", opts: ["deposit", "transfer", "overdraw"], answer: null },
+        { q: "A document to show how much money you have is a", opts: ["bank transfer", "bank statement", "Withdraw"], answer: 1 },
+        { q: "Money going in and out of a bank account is called", opts: ["deposit", "withdraw", "transaction"], answer: 2 }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const $ = (id) => document.getElementById(id);
+        const answersEl = $('answers'), qText = $('q-text'), qCount = $('q-count'), fb = $('feedback');
+        const statProgress = $('stat-progress'), statCorrect = $('stat-correct'), statMistakes = $('stat-mistakes');
+        const progressFill = $('quiz-progress');
+
+        let current = 0;
+        let results = Array(QUESTIONS.length).fill(null);
+        let selections = Array(QUESTIONS.length).fill(null);
+        let buttons = [];
+
+        function buildAnswers() {
+            answersEl.innerHTML = '';
+            buttons = [];
+            QUESTIONS[current].opts.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'bec-ans';
+                btn.textContent = opt;
+                btn.addEventListener('click', () => pick(opt));
+                answersEl.appendChild(btn);
+                buttons.push(btn);
+            });
+        }
+
+        function pick(opt) {
+            if (results[current] !== null) return;
+            selections[current] = opt;
+            const ansIdx = QUESTIONS[current].answer;
+            if (ansIdx === null) {
+                results[current] = 'check';
+                renderAnswered();
+                fb.className = 'bec-feedback is-info';
+                fb.textContent = 'The best answer is “withdraw” — it is missing from the options. Check it with your teacher.';
+            } else {
+                results[current] = (opt === QUESTIONS[current].opts[ansIdx]) ? 'correct' : 'wrong';
+                renderAnswered();
+            }
+            refreshStats();
+        }
+
+        function renderAnswered() {
+            const ansIdx = QUESTIONS[current].answer;
+            buttons.forEach((btn, i) => {
+                btn.classList.remove('is-selected', 'is-correct', 'is-wrong', 'is-locked');
+                btn.classList.add('is-locked');
+                if (i === ansIdx) btn.classList.add('is-correct');
+                else if (btn.textContent === selections[current] && results[current] === 'wrong') btn.classList.add('is-wrong');
+            });
+            if (QUESTIONS[current].answer === null && selections[current]) {
+                const chosen = buttons.find(b => b.textContent === selections[current]);
+                if (chosen) chosen.classList.add('is-selected');
+            } else if (results[current] === 'correct') {
+                fb.className = 'bec-feedback is-good'; fb.textContent = 'Correct! Well done.';
+            } else if (results[current] === 'wrong') {
+                fb.className = 'bec-feedback is-bad'; fb.textContent = 'Not quite — the correct answer is highlighted.';
+            }
+        }
+
+        function renderQuestion() {
+            qText.textContent = QUESTIONS[current].q;
+            qCount.textContent = `${current + 1} of ${QUESTIONS.length}`;
+            fb.className = 'bec-feedback'; fb.innerHTML = '&nbsp;';
+            buildAnswers();
+            if (results[current] !== null) renderAnswered();
+            else if (selections[current] !== null) {
+                const chosen = buttons.find(b => b.textContent === selections[current]);
+                if (chosen) chosen.classList.add('is-selected');
+            }
+            $('btn-prev').disabled = current === 0;
+            $('btn-next').textContent = current === QUESTIONS.length - 1 ? 'Finish' : 'Next Question';
+        }
+
+        function refreshStats() {
+            const answered = results.filter(r => r !== null).length;
+            statProgress.textContent = `${answered}/${QUESTIONS.length}`;
+            statCorrect.textContent = results.filter(r => r === 'correct').length;
+            statMistakes.textContent = results.filter(r => r === 'wrong').length;
+            progressFill.style.width = `${(answered / QUESTIONS.length) * 100}%`;
+        }
+
+        $('btn-next').addEventListener('click', () => {
+            if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+            else {
+                const answered = results.filter(r => r !== null).length;
+                fb.className = 'bec-feedback is-info';
+                fb.textContent = answered === QUESTIONS.length
+                    ? `Finished — ${statCorrect.textContent} correct, ${statMistakes.textContent} mistake(s), 1 to check with your teacher.`
+                    : `${QUESTIONS.length - answered} question(s) left — answer them all to finish.`;
+            }
+        });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; renderQuestion(); } });
+
+        function fullReset() {
+            current = 0;
+            results = Array(QUESTIONS.length).fill(null);
+            selections = Array(QUESTIONS.length).fill(null);
+            refreshStats();
+            renderQuestion();
+        }
+        $('btn-restart').addEventListener('click', fullReset);
+        window.resetSlide = fullReset;
+
+        refreshStats();
+        renderQuestion();
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.09, ease: 'power2.out', clearProps: 'all' });
+        }
+    });
+</script>
+</body>
+</html>

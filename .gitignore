@@ -1,0 +1,15 @@
+# QA / testing artifacts
+.qa-shots/
+.qa-*/
+qa-*.mjs
+*.log
+server.log
+
+# Node tooling (never needed at runtime)
+node_modules/
+package-lock.json
+
+# OS junk
+Thumbs.db
+.Desktop.ini
+.DS_Store

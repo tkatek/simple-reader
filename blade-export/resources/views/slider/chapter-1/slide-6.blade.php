@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+
+    <!-- Slide 06 — Interactive video quiz, replicated 1:1 from the approved BEC
+         reference: big indigo→blue gradient heading + dark subtitle, one unified
+         white stat panel (Progress ring / Correct / Mistakes / Time, dark values),
+         extra-wide quiz card with a 2×2 answer grid (gray letters, purple selected
+         state) and left-aligned pill buttons (Restart / Previous / gradient Next).
+         Scoped .ivq- only; tokens and background reuse bec.css. Sizes are ratio-
+         matched to the reference and clamped to the 1280×720 reader canvas. -->
+    <style>
+        .bec-slide {
+            --ivq-sub: #1e293b;
+            --ivq-ans-bg: #ffffff;
+            --ivq-ans-border: #dcdfea;
+            --ivq-ans-hover: #f8f9ff;
+            --ivq-ans-hover-border: #a5b4fc;
+            --ivq-ans-text: #1e2a4a;
+            --ivq-ans-letter: #6b7280;
+            --ivq-sel-border: #7c3aed;
+            --ivq-sel-bg: #f5f1ff;
+            --ivq-sel-text: #6d28d9;
+            --ivq-label: #7c3aed;
+            --ivq-pill-bg: #f3effb;
+            --ivq-count-bg: #f8fafc;
+            --ivq-count-border: #e2e8f0;
+            --ivq-count-text: #1e2a4a;
+            --ivq-prev-bg: #f1f2f8;
+            --ivq-prev-hover: #e8e9f3;
+            --ivq-prev-text: #9ca3af;
+            --ivq-restart-border: #e0e6ef;
+            --ivq-restart-text: #1e2a4a;
+            --ivq-track: #e5e7f2;
+            --ivq-ring-track: #d1fae5;
+            --ivq-ico-time-bg: #f5f3ff;
+            --ivq-ico-time: #8b5cf6;
+            --ivq-card-shadow: 0 20px 45px -18px rgba(30, 41, 90, 0.16);
+            --ivq-stats-shadow: 0 10px 30px -14px rgba(30, 41, 90, 0.18);
+        }
+        .dark .bec-slide {
+            --ivq-sub: #cbd5e1;
+            --ivq-ans-bg: #1e293b;
+            --ivq-ans-border: rgba(129, 140, 248, 0.32);
+            --ivq-ans-hover: rgba(99, 102, 241, 0.14);
+            --ivq-ans-hover-border: rgba(165, 180, 252, 0.55);
+            --ivq-ans-text: #e2e8f0;
+            --ivq-ans-letter: #94a3b8;
+            --ivq-sel-border: rgba(167, 139, 250, 0.85);
+            --ivq-sel-bg: rgba(139, 92, 246, 0.16);
+            --ivq-sel-text: #c4b5fd;
+            --ivq-label: #c4b5fd;
+            --ivq-pill-bg: rgba(139, 92, 246, 0.16);
+            --ivq-count-bg: rgba(148, 163, 184, 0.12);
+            --ivq-count-border: rgba(148, 163, 184, 0.25);
+            --ivq-count-text: #e2e8f0;
+            --ivq-prev-bg: rgba(148, 163, 184, 0.14);
+            --ivq-prev-hover: rgba(148, 163, 184, 0.26);
+            --ivq-prev-text: #94a3b8;
+            --ivq-restart-border: rgba(148, 163, 184, 0.32);
+            --ivq-restart-text: #e2e8f0;
+            --ivq-track: rgba(148, 163, 184, 0.25);
+            --ivq-ring-track: rgba(16, 185, 129, 0.22);
+            --ivq-ico-time-bg: rgba(139, 92, 246, 0.16);
+            --ivq-ico-time: #a78bfa;
+            --ivq-card-shadow: 0 20px 45px -18px rgba(0, 0, 0, 0.6);
+            --ivq-stats-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.55);
+        }
+
+        /* Stage: centered column that can scroll instead of clip when the
+           viewport is genuinely too short (same approach as the drag-drop slide). */
+        .ivq-stage { justify-content: flex-start; overflow-y: auto; }
+        .ivq-col {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(0.7rem, 2.5vh, 1.25rem);
+            margin-block: auto;
+            padding-block: 0.15rem;
+        }
+
+        /* ── Heading ──────────────────────────────────────────────────── */
+        .ivq-header { text-align: center; }
+        .ivq-title {
+            font-size: var(--bec-title-size);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.12;
+            background: linear-gradient(100deg, var(--bec-brand), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .dark .ivq-title {
+            background: linear-gradient(100deg, #818cf8, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        .ivq-sub {
+            margin: clamp(0.25rem, 0.8vh, 0.5rem) 0 0;
+            font-size: var(--bec-sub-size);
+            font-weight: 600;
+            color: var(--ivq-sub);
+        }
+
+        /* ── Unified stat panel: Progress / Correct / Mistakes / Time ──── */
+        .ivq-stats {
+            width: min(var(--bec-w-standard), 100%);
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            background: var(--bec-surface);
+            border: 1px solid var(--bec-border);
+            border-radius: 1.5rem;
+            box-shadow: var(--ivq-stats-shadow);
+            padding: clamp(0.6rem, 2.4vh, 1.25rem) clamp(0.5rem, 1.4vw, 1rem);
+        }
+        .ivq-stat {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.55rem, 1.6vw, 0.85rem);
+            padding: 0.15rem 0.3rem;
+            min-width: 0;
+        }
+        /* Partial-height dividers, inset from the panel's top and bottom
+           edges (as in the reference) rather than full-bleed lines. */
+        .ivq-stat + .ivq-stat { position: relative; }
+        .ivq-stat + .ivq-stat::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 18%;
+            bottom: 18%;
+            border-left: 1px solid var(--bec-border);
+        }
+        .ivq-ico {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(1.9rem, 4.4vh, 2.35rem);
+            height: clamp(1.9rem, 4.4vh, 2.35rem);
+            border-radius: 9999px;
+        }
+        .ivq-ico.is-good { background: var(--bec-good-soft); color: var(--bec-good); }
+        .ivq-ico.is-bad { background: var(--bec-bad-soft); color: var(--bec-bad); }
+        .ivq-ico.is-time { background: var(--ivq-ico-time-bg); color: var(--ivq-ico-time); }
+        .ivq-ico svg { display: block; }
+        .ivq-stat-label {
+            display: block;
+            font-size: var(--bec-stat-label-size);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--bec-text-2);
+            white-space: nowrap;
+            line-height: 1.25;
+        }
+        .ivq-stat-value {
+            display: block;
+            font-size: var(--bec-stat-value-size);
+            font-weight: 900;
+            color: var(--bec-text);
+            font-variant-numeric: tabular-nums;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+        .ivq-stat.is-prog .ivq-stat-value,
+        .ivq-stat.is-good .ivq-stat-value { color: var(--bec-good); }
+        .ivq-stat.is-bad .ivq-stat-value { color: var(--bec-bad); }
+
+        /* ── Quiz card ────────────────────────────────────────────────── */
+        .ivq-card {
+            width: min(var(--bec-w-quiz), 92%);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.55rem, 1.6vh, 0.9rem);
+            padding: clamp(1.1rem, 3vh, 1.6rem) clamp(1.3rem, 3.6vw, 2.4rem);
+            background: var(--bec-surface);
+            border: 1px solid var(--bec-border);
+            border-radius: var(--bec-card-radius);
+            box-shadow: var(--ivq-card-shadow);
+        }
+
+        .ivq-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+        .ivq-instruction {
+            display: inline-flex;
+            align-items: center;
+            background: var(--ivq-pill-bg);
+            color: var(--ivq-label);
+            border-radius: 9999px;
+            padding: clamp(0.45rem, 1.2vh, 0.7rem) clamp(1rem, 2.6vw, 1.7rem);
+            font-size: var(--bec-instruction-size);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .ivq-qcount {
+            display: inline-flex;
+            align-items: center;
+            background: var(--ivq-count-bg);
+            border: 1px solid var(--ivq-count-border);
+            color: var(--ivq-count-text);
+            border-radius: 9999px;
+            padding: clamp(0.42rem, 1.3vh, 0.62rem) clamp(0.9rem, 2.2vw, 1.4rem);
+            font-size: clamp(0.68rem, 1.5vh, 0.84rem);
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .ivq-track {
+            height: clamp(0.45rem, 1.25vh, 0.62rem);
+            border-radius: 9999px;
+            background: var(--ivq-track);
+            overflow: hidden;
+        }
+        .ivq-track-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, #6d28d9, #3b82f6);
+            transition: width 0.35s ease;
+        }
+
+        .ivq-question {
+            margin: clamp(0.35rem, 1.5vh, 0.9rem) 0;
+            font-size: var(--bec-question-size);
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            line-height: 1.25;
+            color: var(--bec-text);
+            text-align: center;
+        }
+
+        /* ── Answer options — fixed 2×2 grid ──────────────────────────── */
+        .ivq-answers {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: clamp(0.7rem, 2.3vh, 1.2rem);
+        }
+        .ivq-ans {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            gap: 0.55em;
+            min-height: clamp(2.9rem, 7.2vh, 4.1rem);
+            padding: clamp(0.6rem, 1.7vh, 0.9rem) clamp(1rem, 2.8vw, 1.7rem);
+            border: 1.5px solid var(--ivq-ans-border);
+            border-radius: 1.05rem;
+            background: var(--ivq-ans-bg);
+            color: var(--ivq-ans-text);
+            font-family: inherit;
+            font-size: var(--bec-ans-size);
+            font-weight: 700;
+            line-height: 1.3;
+            cursor: pointer;
+            transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+        }
+        .ivq-ans .L { flex: 0 0 auto; font-weight: 800; color: var(--ivq-ans-letter); }
+        .ivq-ans:hover { border-color: var(--ivq-ans-hover-border); background: var(--ivq-ans-hover); }
+        .ivq-ans:focus-visible { outline: 2px solid var(--bec-brand); outline-offset: 2px; }
+        .ivq-ans.is-selected {
+            border-color: var(--ivq-sel-border);
+            border-width: 2px;
+            background: var(--ivq-sel-bg);
+            color: var(--ivq-sel-text);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+        .ivq-ans.is-selected .L { color: var(--ivq-sel-text); }
+        .ivq-ans.is-correct { border-color: var(--bec-good); background: var(--bec-good-soft); color: var(--bec-good); }
+        .ivq-ans.is-correct .L { color: var(--bec-good); }
+        .ivq-ans.is-wrong { border-color: var(--bec-bad); background: var(--bec-bad-soft); color: var(--bec-bad); }
+        .ivq-ans.is-wrong .L { color: var(--bec-bad); }
+        .ivq-ans.is-locked { pointer-events: none; }
+
+        /* Feedback appears only after answering; zero height keeps the
+           unanswered layout identical to the reference. */
+        .ivq-feedback {
+            min-height: 0;
+            margin: 0;
+            text-align: center;
+            font-size: clamp(0.72rem, 1.8vh, 1rem);
+            font-weight: 800;
+            line-height: 1.25;
+        }
+        .ivq-feedback.is-good { color: var(--bec-good); }
+        .ivq-feedback.is-bad { color: var(--bec-bad); }
+        .ivq-feedback.is-info { color: var(--bec-text-2); }
+
+        /* ── Bottom quiz navigation (left-aligned pills, as in reference) ── */
+        .ivq-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-items: stretch;
+            gap: clamp(0.6rem, 1.8vw, 1.05rem);
+            margin-top: clamp(0.3rem, 1.2vh, 0.75rem);
+        }
+        .ivq-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            min-height: clamp(2.5rem, 6.8vh, 3.75rem);
+            padding: clamp(0.55rem, 1.6vh, 0.85rem) clamp(1.1rem, 3vw, 1.9rem);
+            border-radius: 9999px;
+            border: 1px solid transparent;
+            font-family: inherit;
+            font-size: var(--bec-btn-size);
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease, filter 0.2s ease;
+        }
+        .ivq-btn:active { transform: scale(0.97); }
+        .ivq-btn:focus-visible { outline: 2px solid var(--bec-brand); outline-offset: 2px; }
+        .ivq-btn-restart { background: var(--bec-surface); border-color: var(--ivq-restart-border); color: var(--ivq-restart-text); }
+        .ivq-btn-restart:hover { border-color: var(--ivq-ans-hover-border); color: var(--bec-brand); }
+        .ivq-btn-prev { background: var(--ivq-prev-bg); color: var(--ivq-prev-text); font-weight: 700; }
+        .ivq-btn-prev:hover:not([disabled]) { background: var(--ivq-prev-hover); color: var(--bec-text); }
+        .ivq-btn-next {
+            background: linear-gradient(90deg, #6d28d9 0%, #4f46e5 50%, #3b82f6 100%);
+            color: #fff;
+            padding-inline: clamp(1.4rem, 3.8vw, 2.4rem);
+            box-shadow: 0 12px 28px -10px rgba(93, 63, 211, 0.5);
+        }
+        .ivq-btn-next:hover { filter: brightness(1.07); box-shadow: 0 14px 32px -10px rgba(93, 63, 211, 0.62); }
+        .ivq-btn-next svg { width: 1.05em; height: 1.05em; flex: none; }
+        .ivq-btn[disabled] { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+        /* ── Responsive (standalone viewing; the reader renders a fixed
+              1280×720 canvas, so these only apply outside the reader) ──── */
+        @media (max-width: 640px) {
+            .ivq-answers { grid-template-columns: 1fr; }
+            .ivq-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.6rem; }
+            .ivq-stat + .ivq-stat::before { border-left: none; }
+            .ivq-stat:nth-child(even)::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; border-left: 1px solid var(--bec-border); }
+            .ivq-stat:nth-child(n+3) { border-top: 1px solid var(--bec-border); padding-top: 0.6rem; }
+            .ivq-card { width: 100%; padding: 1rem 0.9rem; }
+            .ivq-nav { flex-direction: column; align-items: stretch; }
+            .ivq-btn { width: 100%; }
+        }
+
+        /* Entrance: CSS keyframes with fill-mode "backwards" — the resting
+           state is fully visible, so a throttled animation clock (hidden
+           reader iframe, background tab) can never leave content stuck
+           mid-fade (same guarantee as the closing slide). */
+        .reveal { animation: ivq-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+        .ivq-header { animation-delay: 0.05s; }
+        .ivq-stats { animation-delay: 0.15s; }
+        .ivq-card { animation-delay: 0.25s; }
+        .ivq-settled .reveal { animation: none; }
+        @keyframes ivq-rise {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { animation: none; }
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage ivq-stage">
+        <div class="ivq-col">
+            <header class="ivq-header reveal">
+                <h1 class="ivq-title">Interactive video quiz</h1>
+                <p class="ivq-sub">Watch the video and answer the questions.</p>
+            </header>
+
+            <!-- Unified progress panel: one card, four equal sections -->
+            <div class="ivq-stats reveal" role="group" aria-label="Quiz score">
+                <div class="ivq-stat is-prog">
+                    <svg width="30" height="30" viewBox="0 0 20 20" aria-hidden="true">
+                        <circle cx="10" cy="10" r="8.5" fill="none" stroke="var(--ivq-ring-track)" stroke-width="2.4"/>
+                        <circle id="ring-fill" cx="10" cy="10" r="8.5" fill="none" stroke="var(--bec-good)" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="0 53.41" transform="rotate(-90 10 10)"/>
+                    </svg>
+                    <div>
+                        <span class="ivq-stat-label">Progress</span>
+                        <span class="ivq-stat-value" id="stat-progress">0/5</span>
+                    </div>
+                </div>
+                <div class="ivq-stat is-good">
+                    <span class="ivq-ico is-good" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                    </span>
+                    <div>
+                        <span class="ivq-stat-label">Correct</span>
+                        <span class="ivq-stat-value" id="stat-correct">0</span>
+                    </div>
+                </div>
+                <div class="ivq-stat is-bad">
+                    <span class="ivq-ico is-bad" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </span>
+                    <div>
+                        <span class="ivq-stat-label">Mistakes</span>
+                        <span class="ivq-stat-value" id="stat-mistakes">0</span>
+                    </div>
+                </div>
+                <div class="ivq-stat">
+                    <span class="ivq-ico is-time" aria-hidden="true">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                    </span>
+                    <div>
+                        <span class="ivq-stat-label">Time</span>
+                        <span class="ivq-stat-value" id="stat-time">00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ivq-card reveal">
+                <div class="ivq-top">
+                    <span class="ivq-instruction">Choose the correct answer:</span>
+                    <span class="ivq-qcount" id="q-count">1 of 5</span>
+                </div>
+
+                <div class="ivq-track"><div class="ivq-track-fill" id="quiz-progress"></div></div>
+
+                <p class="ivq-question" id="q-text">Why does the customer go to the bank?</p>
+
+                <div class="ivq-answers" id="answers"></div>
+
+                <p class="ivq-feedback" id="feedback" aria-live="polite">&nbsp;</p>
+
+                <div class="ivq-nav">
+                    <button class="ivq-btn ivq-btn-restart" id="btn-restart" type="button">Restart Quiz</button>
+                    <button class="ivq-btn ivq-btn-prev" id="btn-prev" type="button" disabled>Previous Question</button>
+                    <button class="ivq-btn ivq-btn-next" id="btn-next" type="button">
+                        <span id="btn-next-label">Next Question</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const QUESTIONS = [
+        { q: "Why does the customer go to the bank?", opts: ["To open a new account", "To pay the electric bill", "To buy a new card", "To send a letter"], answer: 1 },
+        { q: "What does the teller ask the customer to show?", opts: ["A passport", "The bill", "A photo", "A phone"], answer: 1 },
+        { q: "How much is the bill?", opts: ["45.60 dollars", "15 dollars", "100 dollars", "5.60 dollars"], answer: 0 },
+        { q: "How does the customer pay?", opts: ["By cash", "By check", "By card", "Online"], answer: 2 },
+        { q: "What does the teller give at the end?", opts: ["A new account", "A receipt", "A bill", "A credit card"], answer: 1 }
+    ];
+    const LETTERS = ["A", "B", "C", "D"];
+    const RING_LEN = 53.41; // 2πr, r = 8.5
+    const REVEAL_DELAY = 550; // ms the selected (purple) state stays visible before the check result appears
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const $ = (id) => document.getElementById(id);
+        const answersEl = $('answers'), qText = $('q-text'), qCount = $('q-count'), fb = $('feedback');
+        const statProgress = $('stat-progress'), statCorrect = $('stat-correct'), statMistakes = $('stat-mistakes'), statTime = $('stat-time');
+        const progressFill = $('quiz-progress'), ringFill = $('ring-fill'), nextLabel = $('btn-next-label');
+
+        let current = 0;
+        let results = Array(QUESTIONS.length).fill(null);
+        let selections = Array(QUESTIONS.length).fill(null);
+        let buttons = [];
+        let revealTimer = null;
+        let timerId = null, seconds = 0, timerStarted = false;
+
+        /* Timer follows the platform convention: starts on the first answer,
+           stops with stopSlideAudio, resets with the quiz. */
+        function fmtTime(s) { return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }
+        function startTimer() {
+            if (timerStarted) return;
+            timerStarted = true;
+            timerId = setInterval(() => { seconds++; statTime.textContent = fmtTime(seconds); }, 1000);
+        }
+        function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+        function buildAnswers() {
+            answersEl.innerHTML = '';
+            buttons = [];
+            QUESTIONS[current].opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'ivq-ans';
+                btn.setAttribute('aria-label', `Answer ${LETTERS[i]}: ${opt}`);
+                const letter = document.createElement('span');
+                letter.className = 'L';
+                letter.textContent = LETTERS[i] + '.';
+                const text = document.createElement('span');
+                text.textContent = opt;
+                btn.append(letter, text);
+                btn.addEventListener('click', () => pick(i));
+                answersEl.appendChild(btn);
+                buttons.push(btn);
+            });
+        }
+
+        function pick(i) {
+            if (results[current] !== null) return;
+            startTimer();
+            selections[current] = i;
+            results[current] = (i === QUESTIONS[current].answer) ? 'correct' : 'wrong';
+            refreshStats();
+            buttons.forEach((btn) => btn.classList.add('is-locked'));
+            buttons[i].classList.add('is-selected');
+            // Show the purple selected state briefly, then reveal the check.
+            const pickedAt = current;
+            clearTimeout(revealTimer);
+            revealTimer = setTimeout(() => {
+                if (current === pickedAt) renderAnswered(false);
+            }, REVEAL_DELAY);
+        }
+
+        function renderAnswered(silent) {
+            const ans = QUESTIONS[current].answer;
+            buttons.forEach((btn, i) => {
+                btn.classList.remove('is-selected', 'is-correct', 'is-wrong');
+                btn.classList.add('is-locked');
+                if (i === ans) btn.classList.add('is-correct');
+                else if (i === selections[current] && results[current] === 'wrong') btn.classList.add('is-wrong');
+            });
+            if (!silent) {
+                if (results[current] === 'correct') { fb.className = 'ivq-feedback is-good'; fb.textContent = 'Correct! Well done.'; }
+                else { fb.className = 'ivq-feedback is-bad'; fb.textContent = 'Not quite — the correct answer is highlighted.'; }
+            }
+        }
+
+        function renderQuestion() {
+            const q = QUESTIONS[current];
+            qText.textContent = q.q;
+            qCount.textContent = `${current + 1} of ${QUESTIONS.length}`;
+            fb.className = 'ivq-feedback'; fb.textContent = '';
+            buildAnswers();
+            if (results[current] !== null) renderAnswered(true);
+            $('btn-prev').disabled = current === 0;
+            nextLabel.textContent = current === QUESTIONS.length - 1 ? 'Finish' : 'Next Question';
+        }
+
+        function refreshStats() {
+            const answered = results.filter(r => r !== null).length;
+            statProgress.textContent = `${answered}/${QUESTIONS.length}`;
+            statCorrect.textContent = results.filter(r => r === 'correct').length;
+            statMistakes.textContent = results.filter(r => r === 'wrong').length;
+            progressFill.style.width = `${(answered / QUESTIONS.length) * 100}%`;
+            ringFill.setAttribute('stroke-dasharray', `${(answered / QUESTIONS.length) * RING_LEN} ${RING_LEN}`);
+        }
+
+        $('btn-next').addEventListener('click', () => {
+            if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+            else {
+                const answered = results.filter(r => r !== null).length;
+                fb.className = 'ivq-feedback is-info';
+                fb.textContent = answered === QUESTIONS.length
+                    ? `Finished — ${statCorrect.textContent} correct, ${statMistakes.textContent} mistake(s).`
+                    : `${QUESTIONS.length - answered} question(s) left — answer them all to finish.`;
+            }
+        });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; renderQuestion(); } });
+
+        function fullReset() {
+            clearTimeout(revealTimer);
+            stopTimer();
+            current = 0;
+            results = Array(QUESTIONS.length).fill(null);
+            selections = Array(QUESTIONS.length).fill(null);
+            seconds = 0;
+            timerStarted = false;
+            statTime.textContent = '00:00';
+            refreshStats();
+            renderQuestion();
+        }
+        $('btn-restart').addEventListener('click', fullReset);
+        window.stopSlideAudio = function stopSlideAudio() { stopTimer(); };
+
+        refreshStats();
+        renderQuestion();
+
+        // Hard stop for the entrance so nothing can linger mid-fade, and a
+        // replay hook so resetSlide restores the initial animation too.
+        function replayEntrance() {
+            document.documentElement.classList.remove('ivq-settled');
+            document.querySelectorAll('.reveal').forEach((el) => {
+                el.style.animation = 'none';
+                void el.offsetWidth; // reflow so the animation restarts
+                el.style.animation = '';
+            });
+            clearTimeout(settleTimer);
+            settleTimer = setTimeout(() => document.documentElement.classList.add('ivq-settled'), 2500);
+        }
+        let settleTimer = setTimeout(() => document.documentElement.classList.add('ivq-settled'), 2500);
+        const rawReset = fullReset;
+        window.resetSlide = function resetSlide() { rawReset(); replayEntrance(); };
+    });
+</script>
+</body>
+</html>

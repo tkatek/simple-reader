@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        .bank-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: clamp(0.8rem, 2vw, 1.4rem); align-items: stretch; width: min(var(--bec-w-wide, 1152px), 100%); max-height: 100%; }
+        @media (max-width: 820px) {
+            .bank-grid { grid-template-columns: 1fr; max-height: none; }
+            .bank-video-wrap { max-width: 560px; margin: 0 auto; width: 100%; }
+        }
+        .dlg-card { display: flex; flex-direction: column; gap: clamp(0.5rem, 1.4vh, 0.85rem); padding: clamp(1.05rem, 2.8vh, 1.7rem); min-height: 0; }
+        .dlg-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: clamp(0.35rem, 1.1vh, 0.6rem); }
+        .key-legend { display: inline-flex; align-items: center; gap: 0.35rem; font-size: clamp(0.62rem, 1.4vh, 0.78rem); font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--bec-brand); }
+        .key-dot { width: 0.55rem; height: 0.55rem; border-radius: 0.25rem; background: var(--bec-brand-soft); border: 1.5px solid var(--bec-brand-glow); }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage" style="gap: clamp(0.55rem, 1.6vh, 1rem)">
+        <div class="bec-header reveal">
+            <span class="bec-kicker">Slide 08 · Video Script</span>
+            <h1 class="bec-title bec-title-grad" style="margin-top:0.35rem">At the Bank</h1>
+            <p class="bec-sub">Video Script · 1. Setting up a Bank Account</p>
+        </div>
+
+        <div class="bank-grid">
+            <!-- Dialogue, revealed in controlled steps -->
+            <div class="bec-card dlg-card reveal">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <p class="bec-quiz-instruction">Follow the conversation:</p>
+                    <span class="key-legend"><span class="key-dot"></span> Key lines</span>
+                </div>
+                <div class="bec-dlg dlg-body" id="dlg-body"></div>
+                <div class="bec-modal-nav" style="padding:0.2rem 0 0">
+                    <button class="bec-pager-arrow" id="dlg-prev" aria-label="Previous lines">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <span class="bec-pager-count" id="dlg-count">1 / 4</span>
+                    <button class="bec-pager-arrow" id="dlg-next" aria-label="Next lines">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ═══ TECH LEAD — VIDEO INTEGRATION ═════════════════════════
+                 Set VIDEO_SRC below to the hosted video URL. The empty black
+                 area is replaced by the real video and controls activate.
+                 Left empty, controls stay disabled — no fake playback. -->
+            <div class="bank-video-wrap reveal" style="display:flex;flex-direction:column;min-height:0">
+                <div class="bec-video-card" id="video-card" style="width:100%">
+                    <div class="bec-video-empty" id="video-empty"><span>Video — will be connected by your teacher</span></div>
+                    <div class="bec-video-controls" id="video-controls">
+                        <button class="bec-vc-btn" id="vc-play" aria-label="Play video" tabindex="-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="vc-icon-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="vc-icon-pause" style="display:none"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>
+                        </button>
+                        <div class="bec-vc-track"><div class="bec-vc-fill" id="vc-fill"></div></div>
+                        <span class="bec-vc-time" id="vc-time">--:-- / --:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ═══ TECH LEAD: set this to the hosted video URL to enable the player ═══ */
+    const VIDEO_SRC = "";
+
+    const LINES = [
+        { sp: "Bank Employee", who: "s-employee", text: "Good morning.", key: false },
+        { sp: "Bank Employee", who: "s-employee", text: "How can I help you today?", key: false },
+        { sp: "Customer", who: "s-customer", text: "Good morning, sir.", key: false },
+        { sp: "Customer", who: "s-customer", text: "I’d like to open a new savings account.", key: false },
+        { sp: "Bank Employee", who: "s-employee", text: "Sure. Do you have your ID card with you?", key: true },
+        { sp: "Customer", who: "s-customer", text: "Yes, here it is.", key: true },
+        { sp: "Bank Employee", who: "s-employee", text: "Thank you. Please fill out this form.", key: true },
+        { sp: "Customer", who: "s-customer", text: "Okay. Do I need to give a photo too?", key: true },
+        { sp: "Bank Employee", who: "s-employee", text: "Yes. One passport-size photo is required.", key: true },
+        { sp: "Customer", who: "s-customer", text: "All right. I have one with me.", key: true },
+        { sp: "Bank Employee", who: "s-employee", text: "Perfect. How much would you like to deposit today?", key: false },
+        { sp: "Customer", who: "s-customer", text: "I’d like to deposit $500.", key: false },
+        { sp: "Bank Employee", who: "s-employee", text: "No problem. Please hand me the cash.", key: false },
+        { sp: "Customer", who: "s-customer", text: "Here you go.", key: false },
+        { sp: "Bank Employee", who: "s-employee", text: "Thank you. I’ll enter the details into the system.", key: false },
+        { sp: "Customer", who: "s-customer", text: "How long will it take to get my account active?", key: false },
+        { sp: "Bank Employee", who: "s-employee", text: "Just a few minutes. You’ll also receive an ATM card soon.", key: false },
+        { sp: "Customer", who: "s-customer", text: "Great. Thank you for your help.", key: false }
+    ];
+    const PAGES = [LINES.slice(0, 5), LINES.slice(5, 10), LINES.slice(10, 14), LINES.slice(14, 18)];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const $ = (id) => document.getElementById(id);
+        const body = $('dlg-body');
+        let page = 0, video = null, playing = false;
+
+        function renderPage() {
+            body.innerHTML = '';
+            PAGES[page].forEach(l => {
+                const row = document.createElement('div');
+                row.className = 'bec-dlg-line ' + l.who + (l.key ? ' is-key' : '');
+                const sp = document.createElement('span');
+                sp.className = 'sp';
+                sp.textContent = l.sp + ':';
+                row.appendChild(sp);
+                row.appendChild(document.createTextNode(' ' + l.text));
+                body.appendChild(row);
+            });
+            $('dlg-count').textContent = `${page + 1} / ${PAGES.length}`;
+            $('dlg-prev').disabled = page === 0;
+            $('dlg-next').disabled = page === PAGES.length - 1;
+        }
+        $('dlg-prev').addEventListener('click', () => { if (page > 0) { page--; renderPage(); } });
+        $('dlg-next').addEventListener('click', () => { if (page < PAGES.length - 1) { page++; renderPage(); } });
+
+        function fmt(s) { return isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '--:--'; }
+        function setPlayIcon(p) {
+            playing = p;
+            const ip = document.querySelector('.vc-icon-play'), ipause = document.querySelector('.vc-icon-pause');
+            if (ip) ip.style.display = p ? 'none' : '';
+            if (ipause) ipause.style.display = p ? '' : 'none';
+        }
+        if (VIDEO_SRC) {
+            const card = $('video-card');
+            $('video-empty').remove();
+            video = document.createElement('video');
+            video.src = VIDEO_SRC;
+            card.prepend(video);
+            $('video-controls').classList.add('is-live');
+            video.addEventListener('loadedmetadata', () => { $('vc-time').textContent = `0:00 / ${fmt(video.duration)}`; });
+            video.addEventListener('timeupdate', () => {
+                $('vc-fill').style.width = `${(video.currentTime / video.duration) * 100 || 0}%`;
+                $('vc-time').textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
+            });
+            video.addEventListener('ended', () => setPlayIcon(false));
+            $('vc-play').addEventListener('click', () => {
+                if (playing) { video.pause(); setPlayIcon(false); }
+                else { video.play(); setPlayIcon(true); }
+            });
+            $('vc-play').removeAttribute('tabindex');
+        }
+
+        window.stopSlideAudio = function stopSlideAudio() { if (video) { video.pause(); setPlayIcon(false); } };
+        window.resetSlide = function resetSlide() { page = 0; renderPage(); if (video) { video.pause(); video.currentTime = 0; setPlayIcon(false); } };
+
+        renderPage();
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.1, ease: 'power2.out', clearProps: 'all' });
+        }
+    });
+</script>
+</body>
+</html>

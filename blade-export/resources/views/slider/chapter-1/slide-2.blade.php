@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        /* ── Listening True/False exercise (BEC exercise family) ────────
+           Same component patterns as the rest of chapter 1: unified
+           4-section score panel (as the fill-in exercise), bec-card
+           exercise container, bec-btn controls. */
+        .bec-slide {
+            --tf-audio-bg: #f1f5f9;
+            --tf-navy: #0f172a;
+            --tf-ghost-bg: #f1f5f9;
+            --tf-ghost-text: #64748b;
+            --tf-ico-time-bg: #f5f3ff;
+            --tf-ico-time: #8b5cf6;
+            --tf-ring-track: #d1fae5;
+        }
+        .dark .bec-slide {
+            --tf-audio-bg: rgba(148, 163, 184, 0.10);
+            --tf-navy: #475569;
+            --tf-ghost-bg: rgba(148, 163, 184, 0.14);
+            --tf-ghost-text: #94a3b8;
+            --tf-ico-time-bg: rgba(139, 92, 246, 0.16);
+            --tf-ico-time: #a78bfa;
+            --tf-ring-track: rgba(16, 185, 129, 0.22);
+        }
+
+        /* ── Stat panel (progress / correct / mistakes / time) ────────── */
+        .tf-stats {
+            width: min(var(--bec-w-standard), 100%);
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            background: var(--bec-surface);
+            border: 1px solid var(--bec-border);
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px -14px rgba(15, 23, 42, 0.25);
+            padding: clamp(0.5rem, 1.4vh, 0.8rem) clamp(0.4rem, 1.2vw, 0.9rem);
+        }
+        .tf-stat {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            padding: 0.2rem 0.3rem;
+            min-width: 0;
+        }
+        .tf-stat + .tf-stat { border-left: 1px solid var(--bec-border); }
+        .tf-ico {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(1.5rem, 3.2vh, 1.8rem);
+            height: clamp(1.5rem, 3.2vh, 1.8rem);
+            border-radius: 9999px;
+        }
+        .tf-ico.is-good { background: var(--bec-good-soft); color: var(--bec-good); }
+        .tf-ico.is-bad { background: var(--bec-bad-soft); color: var(--bec-bad); }
+        .tf-ico.is-time { background: var(--tf-ico-time-bg); color: var(--tf-ico-time); }
+        .tf-ico svg { display: block; }
+        .tf-stat-label {
+            display: block;
+            font-size: var(--bec-stat-label-size);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--bec-text-2);
+            white-space: nowrap;
+        }
+        .tf-stat-value {
+            display: block;
+            font-size: var(--bec-stat-value-size);
+            font-weight: 900;
+            color: var(--bec-text);
+            font-variant-numeric: tabular-nums;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+
+        /* ── Exercise card ─────────────────────────────────────────────── */
+        .tf-quiz {
+            width: min(var(--bec-w-standard), 100%);
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.55rem, 1.6vh, 0.95rem);
+            padding: clamp(0.75rem, 2vh, 1.15rem) clamp(0.95rem, 2.6vw, 1.5rem);
+        }
+        .tf-top { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem 0.75rem; flex-wrap: wrap; }
+        .tf-top-left { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        .tf-instruction { font-size: var(--bec-instruction-size); font-weight: 800; color: var(--bec-brand); }
+
+        /* ── Audio player row ──────────────────────────────────────────── */
+        .tf-audio {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            background: var(--tf-audio-bg);
+            border: 1px solid var(--bec-border);
+            border-radius: 0.75rem;
+            padding: clamp(0.4rem, 1.1vh, 0.55rem) clamp(0.55rem, 1.6vw, 0.8rem);
+        }
+        .tf-play {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(2.1rem, 4.8vh, 2.6rem);
+            height: clamp(2.1rem, 4.8vh, 2.6rem);
+            border-radius: 9999px;
+            background: var(--tf-navy);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.2s ease;
+        }
+        .tf-play:active { transform: scale(0.94); }
+        .tf-play[disabled], .tf-audio.is-disabled .tf-play { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+        .tf-script {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 0.55rem;
+            background: var(--tf-navy);
+            color: #fff;
+            padding: clamp(0.38rem, 1vh, 0.5rem) clamp(0.75rem, 2vw, 1rem);
+            font-size: clamp(0.62rem, 1.3vh, 0.75rem);
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.2s ease;
+        }
+        .tf-script:active { transform: scale(0.97); }
+
+        /* ── Question & answers ────────────────────────────────────────── */
+        .tf-question { display: flex; align-items: baseline; gap: 0.45rem; text-align: left; }
+        .tf-qnum { flex: 0 0 auto; font-size: clamp(0.78rem, 1.8vh, 1rem); font-weight: 900; color: var(--bec-text); font-variant-numeric: tabular-nums; }
+        .tf-qtext { font-size: var(--bec-question-size); font-weight: 800; line-height: 1.4; color: var(--bec-text); }
+
+        .tf-answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+        .tf-ans {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: clamp(2.9rem, 7.2vh, 4.1rem);
+            padding: 0.6rem 1.2rem;
+            border-radius: 1rem;
+            border: 1.5px solid var(--bec-border);
+            background: var(--bec-surface);
+            color: var(--bec-text);
+            font-size: var(--bec-ans-size);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .tf-ans:hover { border-color: var(--bec-brand); color: var(--bec-brand); }
+        .tf-ans.is-selected { background: var(--bec-brand); border-color: var(--bec-brand); color: #fff; box-shadow: 0 8px 16px -8px rgba(79, 70, 229, 0.6); }
+        .tf-ans.is-correct { background: var(--bec-good-soft); border-color: var(--bec-good); color: var(--bec-good); }
+        .tf-ans.is-wrong { background: var(--bec-bad-soft); border-color: var(--bec-bad); color: var(--bec-bad); }
+        .tf-ans.is-locked { pointer-events: none; }
+
+        /* ── Footer navigation ─────────────────────────────────────────── */
+        .tf-footer { border-top: 1px solid var(--bec-border); padding-top: clamp(0.55rem, 1.5vh, 0.85rem); }
+        .tf-nav {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: clamp(0.4rem, 1vw, 0.6rem);
+        }
+        .tf-nav .bec-btn { width: 100%; padding: 0.5rem 0.4rem; }
+        .tf-btn-hint { background: var(--bec-brand-soft); color: var(--bec-brand); border-color: transparent; }
+        .tf-btn-hint:hover { background: var(--bec-brand); color: #fff; }
+        .tf-btn-ghost { background: var(--tf-ghost-bg); color: var(--tf-ghost-text); border-color: transparent; }
+        .tf-btn-ghost:hover { color: var(--bec-text); }
+        .tf-arrow { margin-left: 0.25rem; }
+
+        @media (max-width: 640px) {
+            /* Compact phone metrics so the whole exercise — question,
+               answers and all four controls — fits one screen. */
+            .bec-stage { gap: 0.6rem; padding-top: 16px; padding-bottom: 18px; }
+            .bec-title { margin-top: 0; }
+            /* Score panel: compact 2×2 grid instead of four tiny columns */
+            .tf-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.45rem; padding-block: 0.45rem; }
+            .tf-stat + .tf-stat { border-left: none; }
+            .tf-stat:nth-child(even) { border-left: 1px solid var(--bec-border); }
+            .tf-stat:nth-child(n+3) { border-top: 1px solid var(--bec-border); padding-top: 0.45rem; }
+            .tf-stat-value { font-size: 1.02rem; }
+            .tf-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .tf-nav .bec-btn { min-height: 2.6rem; padding: 0.45rem 0.4rem; }
+            .tf-quiz { padding: 0.8rem 0.8rem; gap: 0.55rem; }
+            .tf-audio { padding: 0.35rem 0.5rem; }
+            .tf-qtext { font-size: 1.05rem; line-height: 1.35; }
+            .tf-ans { min-height: 2.7rem; padding: 0.5rem 0.9rem; }
+            .bec-feedback { min-height: 1.05rem; }
+            .tf-footer { padding-top: 0.45rem; }
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage">
+        <!-- Title -->
+        <div class="bec-header reveal">
+            <h1 class="bec-title" style="margin-top:0">First let’s do a <span class="accent">quick revision!</span></h1>
+        </div>
+
+        <!-- Progress / Correct / Mistakes / Time -->
+        <div class="tf-stats reveal" role="group" aria-label="Exercise score">
+            <div class="tf-stat">
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                    <circle cx="10" cy="10" r="7.5" fill="none" stroke="var(--tf-ring-track)" stroke-width="3"/>
+                    <circle id="ring-fill" cx="10" cy="10" r="7.5" fill="none" stroke="var(--bec-good)" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 47.12" transform="rotate(-90 10 10)"/>
+                </svg>
+                <div><span class="tf-stat-label">Progress</span><span class="tf-stat-value" id="stat-progress">0/4</span></div>
+            </div>
+            <div class="tf-stat is-good">
+                <span class="tf-ico is-good" aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                </span>
+                <div><span class="tf-stat-label">Correct</span><span class="tf-stat-value" id="stat-correct">0</span></div>
+            </div>
+            <div class="tf-stat is-bad">
+                <span class="tf-ico is-bad" aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </span>
+                <div><span class="tf-stat-label">Mistakes</span><span class="tf-stat-value" id="stat-mistakes">0</span></div>
+            </div>
+            <div class="tf-stat">
+                <span class="tf-ico is-time" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                </span>
+                <div><span class="tf-stat-label">Time</span><span class="tf-stat-value" id="stat-time">00:00</span></div>
+            </div>
+        </div>
+
+        <!-- Exercise card -->
+        <div class="bec-card tf-quiz reveal">
+            <div class="tf-top">
+                <div class="tf-top-left">
+                    <p class="tf-instruction">Choose the correct answer:</p>
+                    <span class="bec-qcount" id="q-count">1 of 4</span>
+                </div>
+                <button class="bec-btn bec-btn-soft" id="btn-show">Show Answer</button>
+            </div>
+
+            <!-- ═══ TECH LEAD — AUDIO INTEGRATION ═══════════════════════════
+                 Set AUDIO_SRC below to the hosted audio file URL, e.g.:
+                 const AUDIO_SRC = "https://your-host/audio/revision.mp3";
+                 The player enables itself automatically (play/pause, progress,
+                 time). Leave empty to keep controls disabled. No TTS fallback
+                 by design — the recording is provided by the tech lead only. -->
+            <div class="tf-audio is-disabled" id="audio-row">
+                <button class="tf-play" id="btn-audio" aria-label="Play audio" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="icon-play"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="icon-pause hidden"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg>
+                </button>
+                <div class="bec-track"><div class="bec-track-fill" id="audio-fill"></div></div>
+                <span class="bec-time" id="audio-time">--:-- / --:--</span>
+                <button class="tf-script" id="btn-script">Script</button>
+            </div>
+
+            <div class="tf-question">
+                <span class="tf-qnum" id="q-num">1.</span>
+                <p class="tf-qtext" id="q-text">She doesn’t plan to buy anything else for the apartment.</p>
+            </div>
+
+            <div class="tf-answers">
+                <button class="tf-ans" data-value="true">True</button>
+                <button class="tf-ans" data-value="false">False</button>
+            </div>
+
+            <p class="bec-feedback" id="feedback">&nbsp;</p>
+
+            <div class="tf-footer">
+                <div class="tf-nav">
+                    <button class="bec-btn bec-btn-outline" id="btn-restart">Restart Quiz</button>
+                    <button class="bec-btn tf-btn-hint" id="btn-hint">Hint · 2 left</button>
+                    <button class="bec-btn tf-btn-ghost" id="btn-prev" disabled>Previous Question</button>
+                    <button class="bec-btn bec-btn-primary" id="btn-next">Next Question<span class="tf-arrow">→</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script overlay: paginated transcript, no scrolling -->
+    <div class="bec-overlay" id="script-overlay">
+        <div class="bec-card bec-modal">
+            <div class="bec-modal-head">
+                <h2 class="bec-modal-title">Audio script</h2>
+                <button class="bec-modal-close" id="script-close" aria-label="Close script">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="bec-modal-body" id="script-body"></div>
+            <div class="bec-modal-nav">
+                <button class="bec-pager-arrow" id="script-prev" aria-label="Previous part">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <span class="bec-pager-count" id="script-count">1 / 4</span>
+                <button class="bec-pager-arrow" id="script-next" aria-label="Next part">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ═══ TECH LEAD: set this to the hosted audio URL to enable the player ═══ */
+    const AUDIO_SRC = "";
+
+    const QUESTIONS = [
+        { text: "She doesn’t plan to buy anything else for the apartment.", answer: false, hint: "Listen again to conversation 1 — the kitchen and the refrigerator." },
+        { text: "He has a new bed.", answer: false, hint: "Listen again to conversation 2 — the bedroom and the mattress on the floor." },
+        { text: "She wants to buy some more furniture.", answer: true, hint: "Listen again to conversation 3 — the living room and the sofa." },
+        { text: "She’ll probably take a bath at her friend’s place.", answer: true, hint: "Listen again to conversation 4 — the small bathroom." }
+    ];
+    const TOTAL = QUESTIONS.length;
+    const HINTS_TOTAL = 2;
+    const RING_LEN = 47.12; // 2πr, r = 7.5
+
+    const SCRIPT = [
+        ["A: Does the kitchen have everything you need, like a stove and a refrigerator?",
+         "B: There’s a stove, but not a refrigerator. I need to buy one."],
+        ["A: You don’t have a bed in your bedroom?",
+         "B: Well, I have a TV. But for now, I only have a mattress on the floor.",
+         "A: Really?"],
+        ["A: We don’t have much furniture yet. We don’t even have a sofa in the living room.",
+         "B: Hey. I’ve one I can sell you.",
+         "A: Really? Great."],
+        ["A: The bathroom is very small. There’s just a shower and a toilet.",
+         "B: You can come and take a bath at my place any time.",
+         "A: Thanks, I probably will."]
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const $ = (id) => document.getElementById(id);
+        const qText = $('q-text'), qNum = $('q-num'), qCount = $('q-count'), fb = $('feedback');
+        const ansBtns = Array.from(document.querySelectorAll('.tf-answers .tf-ans'));
+        const statProgress = $('stat-progress'), statCorrect = $('stat-correct'), statMistakes = $('stat-mistakes'), statTime = $('stat-time');
+        const ringFill = $('ring-fill');
+        const overlay = $('script-overlay'), scriptBody = $('script-body');
+        const btnHint = $('btn-hint'), btnNext = $('btn-next');
+
+        let current = 0;
+        let results = Array(TOTAL).fill(null); // 'correct' | 'wrong' | 'revealed'
+        let selections = Array(TOTAL).fill(null);
+        let hintsLeft = HINTS_TOTAL;
+        let timerId = null, seconds = 0, timerStarted = false;
+        let audio = null, audioPlaying = false;
+
+        /* ── Audio player (activates only when AUDIO_SRC is set) ── */
+        function setupAudio() {
+            if (!AUDIO_SRC) return; // stays disabled — no fake playback, no TTS
+            audio = new Audio(AUDIO_SRC);
+            audio.preload = 'metadata';
+            $('audio-row').classList.remove('is-disabled');
+            $('btn-audio').disabled = false;
+            const fmt = (s) => isFinite(s) ? `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '--:--';
+            audio.addEventListener('loadedmetadata', () => { $('audio-time').textContent = `00:00 / ${fmt(audio.duration)}`; });
+            audio.addEventListener('timeupdate', () => {
+                $('audio-fill').style.width = `${(audio.currentTime / audio.duration) * 100 || 0}%`;
+                $('audio-time').textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+            });
+            audio.addEventListener('ended', () => setPlayIcon(false));
+        }
+        function setPlayIcon(playing) {
+            audioPlaying = playing;
+            $('btn-audio').querySelector('.icon-play').classList.toggle('hidden', playing);
+            $('btn-audio').querySelector('.icon-pause').classList.toggle('hidden', !playing);
+        }
+        $('btn-audio').addEventListener('click', () => {
+            if (!audio) return;
+            if (audioPlaying) { audio.pause(); setPlayIcon(false); }
+            else { audio.play(); setPlayIcon(true); }
+        });
+
+        /* ── Timer (family behavior: starts on first answer action) ── */
+        function startTimer() {
+            if (timerStarted) return;
+            timerStarted = true;
+            timerId = setInterval(() => {
+                seconds++;
+                statTime.textContent = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+            }, 1000);
+        }
+        function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+        /* ── Stats: progress is live; correct/mistakes mirror results ── */
+        function refreshStats() {
+            const answered = results.filter(r => r !== null).length;
+            statProgress.textContent = `${answered}/${TOTAL}`;
+            statCorrect.textContent = results.filter(r => r === 'correct').length;
+            statMistakes.textContent = results.filter(r => r === 'wrong').length;
+            ringFill.setAttribute('stroke-dasharray', `${RING_LEN * answered / TOTAL} ${RING_LEN}`);
+        }
+
+        function refreshHint() {
+            btnHint.textContent = `Hint · ${hintsLeft} left`;
+            btnHint.disabled = hintsLeft === 0;
+        }
+
+        /* ── Question rendering ── */
+        function renderQuestion() {
+            const q = QUESTIONS[current];
+            qText.textContent = q.text;
+            qNum.textContent = `${current + 1}.`;
+            qCount.textContent = `${current + 1} of ${TOTAL}`;
+            ansBtns.forEach(btn => btn.classList.remove('is-correct', 'is-wrong', 'is-selected', 'is-locked'));
+            fb.className = 'bec-feedback'; fb.innerHTML = '&nbsp;';
+            const res = results[current];
+            ansBtns.forEach(btn => {
+                if (selections[current] === btn.dataset.value && !res) btn.classList.add('is-selected');
+            });
+            if (res) {
+                lockQuestion(res, true);
+            }
+            $('btn-prev').disabled = current === 0;
+            btnNext.textContent = '';
+            btnNext.appendChild(document.createTextNode(current === TOTAL - 1 ? 'Finish' : 'Next Question'));
+            if (current !== TOTAL - 1) {
+                const arrow = document.createElement('span');
+                arrow.className = 'tf-arrow';
+                arrow.textContent = '→';
+                btnNext.appendChild(arrow);
+            }
+        }
+
+        function lockQuestion(res, silent) {
+            const q = QUESTIONS[current];
+            ansBtns.forEach(btn => {
+                const val = btn.dataset.value === 'true';
+                btn.classList.remove('is-selected');
+                btn.classList.add('is-locked');
+                if (val === q.answer) btn.classList.add('is-correct');
+                else if (selections[current] === btn.dataset.value && res === 'wrong') btn.classList.add('is-wrong');
+            });
+            if (!silent) {
+                if (res === 'correct') { fb.className = 'bec-feedback is-good'; fb.textContent = 'Correct! Well done.'; }
+                else if (res === 'wrong') { fb.className = 'bec-feedback is-bad'; fb.textContent = 'Not quite — the correct answer is highlighted.'; }
+                else { fb.className = 'bec-feedback is-info'; fb.textContent = 'Answer revealed.'; }
+            }
+        }
+
+        ansBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (results[current] !== null) return;
+                startTimer();
+                selections[current] = btn.dataset.value;
+                const val = btn.dataset.value === 'true';
+                results[current] = (val === QUESTIONS[current].answer) ? 'correct' : 'wrong';
+                lockQuestion(results[current], false);
+                refreshStats();
+            });
+        });
+
+        $('btn-show').addEventListener('click', () => {
+            if (results[current] !== null) return;
+            startTimer();
+            results[current] = 'revealed';
+            lockQuestion('revealed', false);
+            refreshStats();
+        });
+
+        btnHint.addEventListener('click', () => {
+            if (hintsLeft === 0) return;
+            hintsLeft--;
+            refreshHint();
+            fb.className = 'bec-feedback is-info';
+            fb.textContent = QUESTIONS[current].hint;
+        });
+
+        btnNext.addEventListener('click', () => {
+            if (current < TOTAL - 1) { current++; renderQuestion(); }
+            else {
+                const answered = results.filter(r => r !== null).length;
+                fb.className = 'bec-feedback is-info';
+                fb.textContent = answered === TOTAL
+                    ? `Finished — ${statCorrect.textContent} correct, ${statMistakes.textContent} mistake(s).`
+                    : `${TOTAL - answered} question(s) left — answer them all to finish.`;
+            }
+        });
+        $('btn-prev').addEventListener('click', () => { if (current > 0) { current--; renderQuestion(); } });
+
+        /* ── Script overlay (paginated, no scroll) ── */
+        let scriptPage = 0;
+        function renderScript() {
+            scriptBody.innerHTML = '';
+            SCRIPT[scriptPage].forEach(line => {
+                const p = document.createElement('p');
+                p.className = 'bec-script-line';
+                const sp = document.createElement('span');
+                sp.className = 'sp';
+                sp.textContent = line.slice(0, line.indexOf(':') + 1);
+                p.appendChild(sp);
+                p.appendChild(document.createTextNode(line.slice(line.indexOf(':') + 1)));
+                scriptBody.appendChild(p);
+            });
+            const head = document.createElement('div');
+            head.className = 'flex items-center gap-1';
+            head.innerHTML = `<span class="bec-script-num">${scriptPage + 1}</span><span style="font-size:0.7rem;font-weight:800;color:var(--bec-text-2)">Conversation ${scriptPage + 1} of 4</span>`;
+            scriptBody.prepend(head);
+            $('script-count').textContent = `${scriptPage + 1} / ${SCRIPT.length}`;
+            $('script-prev').disabled = scriptPage === 0;
+            $('script-next').disabled = scriptPage === SCRIPT.length - 1;
+        }
+        $('btn-script').addEventListener('click', () => { renderScript(); overlay.classList.add('is-open'); });
+        $('script-close').addEventListener('click', () => overlay.classList.remove('is-open'));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+        $('script-prev').addEventListener('click', () => { if (scriptPage > 0) { scriptPage--; renderScript(); } });
+        $('script-next').addEventListener('click', () => { if (scriptPage < SCRIPT.length - 1) { scriptPage++; renderScript(); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.classList.remove('is-open'); });
+
+        /* ── Reset (quiz + reader hook) ── */
+        function fullReset() {
+            current = 0;
+            results = Array(TOTAL).fill(null);
+            selections = Array(TOTAL).fill(null);
+            hintsLeft = HINTS_TOTAL;
+            refreshHint();
+            seconds = 0; timerStarted = false;
+            stopTimer();
+            statTime.textContent = '00:00';
+            if (audio) { audio.pause(); audio.currentTime = 0; setPlayIcon(false); }
+            overlay.classList.remove('is-open');
+            refreshStats();
+            renderQuestion();
+        }
+        $('btn-restart').addEventListener('click', fullReset);
+        window.resetSlide = fullReset;
+
+        window.stopSlideAudio = function stopSlideAudio() {
+            stopTimer();
+            if (audio) { audio.pause(); audio.currentTime = 0; setPlayIcon(false); }
+        };
+
+        /* ── Init ── */
+        setupAudio();
+        refreshStats();
+        refreshHint();
+        renderQuestion();
+
+        /* Subtle entrance */
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.35, stagger: 0.09, ease: 'power2.out', clearProps: 'all' });
+        }
+    });
+</script>
+</body>
+</html>

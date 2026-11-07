@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boston English Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] } } }
+        };
+
+        (function applyInitialTheme() {
+            let useDark = false;
+            try {
+                if (window.parent && window.parent !== window) {
+                    useDark = window.parent.document.documentElement.classList.contains('dark');
+                }
+            } catch (e) {}
+            if (!useDark) {
+                const saved = localStorage.getItem('theme-preference');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                useDark = saved ? saved === 'dark' : prefersDark;
+            }
+            document.documentElement.classList.toggle('dark', useDark);
+
+            // Embedded in the reader: switch off this slide's own stage
+            // paint so the reader's full-stage backdrop shows through
+            // seamlessly (no seams, no unpainted strips).
+            try {
+                document.documentElement.classList.toggle('bec-embedded', window.parent !== window);
+            } catch (e) {}
+        })();
+
+        window.setTheme = function setTheme(theme) {
+            const useDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', useDark);
+            localStorage.setItem('theme-preference', useDark ? 'dark' : 'light');
+        };
+
+        // Live theme sync with the reader: its toggle writes 'editor-theme-preference'
+        // to localStorage, which fires a storage event inside every slide iframe.
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'editor-theme-preference' && (event.newValue === 'dark' || event.newValue === 'light')) {
+                document.documentElement.classList.toggle('dark', event.newValue === 'dark');
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="{{ asset('bec/chapter-1/bec.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        /* ── New Language — same component family as the "Food Quantities" slide:
+              two-column layout, gradient heading, white sentence cards with a
+              purple glow on the right end + speaker button on the right,
+              tall indigo-framed image panel on the right. ─────────────────── */
+        .lang-layout {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: clamp(1.2rem, 3.5vw, 3rem);
+            width: min(var(--bec-w-wide, 1152px), 100%);
+            min-height: 0;
+        }
+
+        .lang-left {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .lang-title {
+            font-size: var(--bec-title-size);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            background: linear-gradient(100deg, var(--bec-brand), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .dark .lang-title { background-image: linear-gradient(100deg, #818cf8, #60a5fa); }
+
+        .lang-sub {
+            margin-top: 0.4rem;
+            font-size: var(--bec-sub-size);
+            font-weight: 600;
+            color: var(--bec-text-2);
+        }
+
+        .lang-cards {
+            margin-top: clamp(0.8rem, 2.6vh, 1.6rem);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.5rem, 1.6vh, 0.95rem);
+            width: min(640px, 100%);
+        }
+
+        .lang-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            min-height: clamp(3.2rem, 8.4vh, 4.6rem);
+            padding: clamp(0.7rem, 2vh, 1.1rem) clamp(1.05rem, 2.4vw, 1.6rem);
+            background: var(--bec-surface);
+            border: 1px solid var(--bec-border);
+            border-radius: 1.35rem;
+            box-shadow: 0 10px 30px -14px rgba(79, 70, 229, 0.28);
+            overflow: hidden;
+        }
+        /* soft purple glow at the right end of the card */
+        .lang-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -2.6rem;
+            transform: translateY(-50%);
+            width: 9rem;
+            height: 9rem;
+            border-radius: 9999px;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.32), rgba(129, 140, 248, 0) 68%);
+            pointer-events: none;
+        }
+        .dark .lang-card::after {
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0) 68%);
+        }
+
+        .lang-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: left;
+            font-size: clamp(0.95rem, 2.3vh, 1.3rem);
+            font-weight: 700;
+            color: var(--bec-text);
+        }
+
+        .lang-speak {
+            position: relative;
+            z-index: 1;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: clamp(2.2rem, 5.4vh, 2.65rem);
+            height: clamp(2.2rem, 5.4vh, 2.65rem);
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 18px -8px rgba(124, 58, 237, 0.6);
+            transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
+        }
+        .lang-speak:hover { filter: brightness(1.08); }
+        .lang-speak:active { transform: scale(0.94); }
+        /* audio not yet provided — visibly unavailable until a source is connected */
+        .lang-speak[disabled] {
+            opacity: 0.4;
+            filter: saturate(0.45);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* ── Right image panel: white mat + thin indigo border, spans the
+              content height like the reference slide. ─────────────────────── */
+        .lang-frame {
+            flex: 0 0 auto;
+            align-self: stretch;
+            width: clamp(240px, 30vw, 360px);
+            min-height: 0;
+            display: flex;
+            padding: clamp(0.5rem, 1.2vw, 0.75rem);
+            background: var(--bec-surface);
+            border: 2px solid var(--bec-brand);
+            border-radius: 1.3rem;
+            box-shadow: 0 18px 40px -20px rgba(79, 70, 229, 0.35);
+        }
+        .lang-photo {
+            position: relative;
+            flex: 1 1 auto;
+            min-width: 0;
+            border-radius: 0.85rem;
+            overflow: hidden;
+            background: var(--bec-brand-soft);
+        }
+        .lang-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        /* neutral container shown while the photo is pending */
+        .lang-photo-empty {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.75rem;
+            text-align: center;
+            color: var(--bec-brand);
+        }
+        .lang-photo-empty svg { opacity: 0.8; }
+        .lang-photo-empty .t1 {
+            font-size: clamp(0.55rem, 1.15vh, 0.68rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.75;
+        }
+        .lang-photo-empty .t2 {
+            font-size: clamp(0.55rem, 1.15vh, 0.7rem);
+            font-weight: 700;
+            color: var(--bec-text-2);
+        }
+
+        /* ── Responsive ──────────────────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .lang-layout { gap: clamp(1rem, 3vw, 1.8rem); }
+            .lang-frame { width: clamp(170px, 24vw, 240px); }
+            .lang-cards { width: min(500px, 100%); }
+        }
+        /* phones: stack — compact image banner above the cards, no scrolling */
+        @media (max-width: 620px) {
+            .lang-layout { flex-direction: column; align-items: center; gap: clamp(0.8rem, 2vh, 1.2rem); }
+            .lang-frame {
+                align-self: center;
+                width: min(340px, 88%);
+                aspect-ratio: 16 / 9;
+            }
+            .lang-cards { width: 100%; }
+        }
+        /* too little height for cards + image: keep the five cards only */
+        @media (max-width: 620px) and (max-height: 640px) {
+            .lang-frame { display: none; }
+        }
+        @media (max-height: 560px) {
+            .lang-title { font-size: clamp(1.5rem, 5.2vh, 2.3rem); }
+            .lang-card { min-height: clamp(2.7rem, 7.8vh, 3.4rem); }
+            .lang-cards { gap: clamp(0.4rem, 1.4vh, 0.7rem); margin-top: clamp(0.5rem, 2vh, 1rem); }
+        }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+<div class="bec-slide">
+    <div class="bec-glow"></div>
+
+    <div class="bec-stage">
+        <div class="lang-layout">
+            <!-- ══ LEFT COLUMN — title + phrase cards ═══════════════════ -->
+            <div class="lang-left">
+                <div class="reveal">
+                    <h1 class="lang-title">New Language</h1>
+                    <p class="lang-sub">Useful phrases for paying bills and making payments.</p>
+                </div>
+
+                <!-- ═══ TECH LEAD — AUDIO INTEGRATION ═════════════════════
+                     Each card carries data-say (the phrase) and an empty
+                     data-audio. Set data-audio to the hosted audio URL per
+                     phrase (or fill PHRASE_AUDIO below with a {phrase: url}
+                     map) and the speaker buttons enable automatically.
+                     No TTS fallback by design. -->
+                <div class="lang-cards">
+                    <div class="lang-card reveal">
+                        <p class="lang-text">Your total is….</p>
+                        <button class="lang-speak" data-say="Your total is…." data-audio="" aria-label="Listen: Your total is…." title="Audio will be connected by your teacher" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                        </button>
+                    </div>
+                    <div class="lang-card reveal">
+                        <p class="lang-text">pay by card /cash/ check</p>
+                        <button class="lang-speak" data-say="pay by card /cash/ check" data-audio="" aria-label="Listen: pay by card, cash, check" title="Audio will be connected by your teacher" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                        </button>
+                    </div>
+                    <div class="lang-card reveal">
+                        <p class="lang-text">Insert your card</p>
+                        <button class="lang-speak" data-say="Insert your card" data-audio="" aria-label="Listen: Insert your card" title="Audio will be connected by your teacher" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                        </button>
+                    </div>
+                    <div class="lang-card reveal">
+                        <p class="lang-text">Here’s your receipt.</p>
+                        <button class="lang-speak" data-say="Here’s your receipt." data-audio="" aria-label="Listen: Here's your receipt." title="Audio will be connected by your teacher" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                        </button>
+                    </div>
+                    <div class="lang-card reveal">
+                        <p class="lang-text">I would like to open a bank account</p>
+                        <button class="lang-speak" data-say="I would like to open a bank account" data-audio="" aria-label="Listen: I would like to open a bank account" title="Audio will be connected by your teacher" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ RIGHT COLUMN — framed educational image ══════════════
+                 ═══ TECH LEAD — IMAGE INTEGRATION ════════════════════════
+                 Replace the .lang-photo-empty block below with:
+                 <img src="https://host/path/paying-by-card.jpg"
+                      alt="Customer paying with a bank card at a payment terminal">
+                 (object-fit: cover is already applied — landscape or portrait
+                 photos both fill the frame without distortion). -->
+            <figure class="lang-frame reveal">
+                <div class="lang-photo">
+                    <div class="lang-photo-empty" role="img" aria-label="Image placeholder: customer paying with a bank card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M6 15h4"/></svg>
+                        <span class="t1">Image pending</span>
+                        <span class="t2">Paying by card at the counter</span>
+                    </div>
+                </div>
+            </figure>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ═══ TECH LEAD: optional map of phrase → hosted audio URL, e.g.
+       const PHRASE_AUDIO = { "Insert your card": "https://host/a/insert.mp3" };
+       When a phrase has a URL here (or in its data-audio attribute), its
+       speaker button enables and plays the real recording. ═══ */
+    const PHRASE_AUDIO = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let current = null;
+        document.querySelectorAll('.lang-speak').forEach(btn => {
+            const src = btn.dataset.audio || PHRASE_AUDIO[btn.dataset.say];
+            if (src) {
+                btn.disabled = false;
+                btn.removeAttribute('title');
+                const audio = new Audio(src);
+                audio.preload = 'metadata';
+                btn.addEventListener('click', () => {
+                    if (current && current !== audio) { current.pause(); current.currentTime = 0; }
+                    if (!audio.paused) { audio.pause(); audio.currentTime = 0; }
+                    else { current = audio; audio.play(); }
+                });
+            }
+        });
+
+        window.stopSlideAudio = function stopSlideAudio() { if (current) { current.pause(); current.currentTime = 0; } };
+        window.resetSlide = function resetSlide() {};
+
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (window.gsap && !reduced) {
+            gsap.timeline().from('.reveal', { opacity: 0, y: 10, duration: 0.3, stagger: 0.08, ease: 'power2.out', clearProps: 'all' });
+        }
+    });
+</script>
+</body>
+</html>

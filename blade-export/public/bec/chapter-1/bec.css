@@ -1,0 +1,785 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Boston English Center — Chapter 1 shared slide theme (v2)
+   Scoped: every class is prefixed .bec- so nothing leaks to the reader.
+
+   Source of truth for the chapter's visual scale, derived from the
+   reference deck (Plus Jakarta Sans, indigo #4f46e5 → blue #3b82f6
+   gradient headings, lavender stage wash, white rounded exercise
+   cards, soft shadows).
+
+   Key rules:
+   • ONE responsive title size for every standard activity slide
+     (--bec-title-size, container-query based — 44px on the 1280px
+     design canvas, ~27px on a 768px tablet stage).
+   • ONE stage wash (light lavender + soft glows) painted by .bec-slide
+     for standalone viewing, and by the reader's .slide-backdrop when
+     embedded (slides go transparent via html.bec-embedded).
+   • Content width variants: --bec-w-standard / --bec-w-quiz /
+     --bec-w-wide / --bec-w-gallery.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.bec-slide {
+    --bec-brand: #4f46e5;
+    --bec-brand-glow: #818cf8;
+    --bec-brand-soft: #eef2ff;
+    --bec-bg: #f3f4fb;
+    --bec-surface: #ffffff;
+    --bec-text: #0f172a;
+    --bec-text-2: #64748b;
+    --bec-border: #e2e8f0;
+    --bec-good: #10b981;
+    --bec-good-soft: #ecfdf5;
+    --bec-bad: #f43f5e;
+    --bec-bad-soft: #fff1f2;
+    --bec-radius: 1.5rem;
+
+    /* ── Shared typography scale (vh units resolve against the fixed
+          720px design canvas inside the reader) ─────────────────────── */
+    --bec-title-size: clamp(1.7rem, 3.5cqw, 2.75rem);   /* 44.8px @1280 */
+    --bec-sub-size: clamp(0.85rem, 2.3vh, 1.2rem);      /* ~16.6px @720 */
+    --bec-kicker-size: clamp(0.62rem, 1.4vh, 0.78rem);
+    --bec-instruction-size: clamp(0.8rem, 2vh, 1rem);
+    --bec-question-size: clamp(1.25rem, 4.5vh, 2.15rem); /* ~32px @720  */
+    --bec-ans-size: clamp(0.9rem, 2.6vh, 1.4rem);        /* ~18.7px @720 */
+    --bec-btn-size: clamp(0.78rem, 1.9vh, 1rem);         /* ~13.7px @720 */
+    --bec-body-size: clamp(0.82rem, 1.9vh, 1.02rem);
+    --bec-stat-label-size: clamp(0.6rem, 1.3vh, 0.72rem);
+    --bec-stat-value-size: clamp(1rem, 2.6vh, 1.45rem);
+
+    /* ── Shared content-width categories ───────────────────────────── */
+    --bec-w-standard: 760px;   /* T/F + listening quizzes, objectives   */
+    --bec-w-quiz: 1080px;      /* wide multiple-choice quiz cards       */
+    --bec-w-wide: 1152px;      /* two-column teaching activities        */
+    --bec-w-gallery: 1360px;   /* vocabulary gallery                    */
+
+    /* ── Shared card metrics ───────────────────────────────────────── */
+    --bec-card-radius: 1.25rem;
+    --bec-shadow: 0 14px 34px -16px rgba(15, 23, 42, 0.18);
+    --bec-shadow-lg: 0 20px 45px -18px rgba(30, 41, 90, 0.16);
+
+    /* Container query context: cqw units inside a slide resolve against
+       the slide's own width (1280px design canvas in the reader, the
+       real stage width for the scrolling gallery slide). */
+    container-type: inline-size;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    width: 100%;
+    overflow: hidden;
+    background:
+        radial-gradient(46rem 32rem at -6% -10%, rgba(139, 124, 243, 0.20), transparent 62%),
+        radial-gradient(44rem 30rem at 106% 110%, rgba(59, 130, 246, 0.13), transparent 60%),
+        var(--bec-bg);
+    color: var(--bec-text);
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark .bec-slide {
+    --bec-brand: #6366f1;
+    --bec-brand-glow: #818cf8;
+    --bec-brand-soft: rgba(99, 102, 241, 0.16);
+    --bec-bg: #0f172a;
+    --bec-surface: #1e293b;
+    --bec-text: #f1f5f9;
+    --bec-text-2: #94a3b8;
+    --bec-border: #334155;
+    --bec-good-soft: rgba(16, 185, 129, 0.15);
+    --bec-bad-soft: rgba(244, 63, 94, 0.15);
+    --bec-shadow: 0 14px 34px -16px rgba(0, 0, 0, 0.5);
+    --bec-shadow-lg: 0 20px 45px -18px rgba(0, 0, 0, 0.55);
+    background:
+        radial-gradient(46rem 32rem at -6% -10%, rgba(99, 102, 241, 0.16), transparent 62%),
+        radial-gradient(44rem 30rem at 106% 110%, rgba(59, 130, 246, 0.10), transparent 60%),
+        var(--bec-bg);
+}
+
+/* Slide 7 keeps its own root class; expose the same container context
+   and wash there so its title token resolves identically. */
+.s7-slide { container-type: inline-size; }
+
+/* ── EMBEDDED IN THE READER ─────────────────────────────────────────
+   When a slide runs inside the reader iframe it adds html.bec-embedded
+   (set by its theme bootstrap). The reader paints the stage backdrop
+   edge-to-edge behind the scaled 16:9 canvas, so the slide's own paint
+   is switched off: no seam between iframe and stage, and the wash stays
+   continuous while the gallery slide scrolls. */
+html.bec-embedded,
+html.bec-embedded body {
+    background: transparent !important;
+    background-image: none !important;
+}
+html.bec-embedded .bec-slide,
+html.bec-embedded .s7-slide,
+html.bec-embedded .intro,
+html.bec-embedded .thanks,
+html.bec-embedded .warm-slide {
+    background: transparent !important;
+    background-image: none !important;
+}
+html.bec-embedded .bec-glow,
+html.bec-embedded .obj3-glow,
+html.bec-embedded .intro-bg,
+html.bec-embedded .thanks-bg,
+html.bec-embedded .dd-glow {
+    display: none !important;
+}
+
+/* Soft background glows (standalone viewing only; the reader backdrop
+   carries the glows when embedded). Same family as the reference. */
+.bec-glow { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.bec-glow::before, .bec-glow::after {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    opacity: 0.55;
+}
+.bec-glow::before { width: 26rem; height: 26rem; top: -9rem; left: -9rem; background: rgba(139, 124, 243, 0.16); }
+.bec-glow::after  { width: 30rem; height: 30rem; bottom: -11rem; right: -10rem; background: rgba(59, 130, 246, 0.12); }
+.dark .bec-glow::before { opacity: 0.35; }
+.dark .bec-glow::after { opacity: 0.3; }
+
+/* ── Stage & titles ─────────────────────────────────────────────── */
+.bec-stage {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(0.75rem, 2vh, 1.75rem) clamp(1rem, 3vw, 2.5rem);
+    gap: clamp(0.6rem, 1.6vh, 1.25rem);
+    width: 100%;
+}
+
+.bec-header { text-align: center; flex: 0 0 auto; }
+.bec-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--bec-border);
+    background: var(--bec-brand-soft);
+    color: var(--bec-brand);
+    border-radius: 9999px;
+    padding: 0.32rem 0.95rem;
+    font-size: var(--bec-kicker-size);
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+/* THE standard activity title: one size, one weight, one gradient
+   treatment for every standard slide in the chapter. */
+.bec-title {
+    margin-top: 0.55rem;
+    font-size: var(--bec-title-size);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+}
+.bec-title .accent {
+    background: linear-gradient(100deg, var(--bec-brand), #3b82f6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+/* whole-heading gradient variant (quiz family) */
+.bec-title.bec-title-grad {
+    background: linear-gradient(100deg, var(--bec-brand) 5%, #3b82f6 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.dark .bec-title.bec-title-grad {
+    background: linear-gradient(100deg, #818cf8, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+.bec-sub {
+    margin-top: 0.35rem;
+    font-size: var(--bec-sub-size);
+    font-weight: 600;
+    color: var(--bec-text-2);
+}
+
+/* ── Cards ──────────────────────────────────────────────────────── */
+.bec-card {
+    background: var(--bec-surface);
+    border: 1px solid var(--bec-border);
+    border-radius: var(--bec-card-radius);
+    box-shadow: var(--bec-shadow);
+}
+.bec-card-soft { background: var(--bec-brand-soft); border: 1px solid var(--bec-border); border-radius: 1rem; }
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+.bec-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: clamp(2.5rem, 6.6vh, 3.6rem);
+    border-radius: 9999px;
+    border: 1px solid transparent;
+    padding: 0.55rem 1.4rem;
+    font-size: var(--bec-btn-size);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+    user-select: none;
+    white-space: nowrap;
+}
+.bec-btn:active { transform: scale(0.97); }
+.bec-btn-primary { background: linear-gradient(100deg, #4f46e5, #3b82f6); color: #fff; box-shadow: 0 14px 28px -12px rgba(79, 70, 229, 0.55); }
+.bec-btn-primary:hover { filter: brightness(1.07); }
+.bec-btn-soft { background: var(--bec-brand-soft); color: var(--bec-brand); border-color: transparent; }
+.bec-btn-soft:hover { background: var(--bec-brand); color: #fff; }
+.bec-btn-outline { background: var(--bec-surface); color: var(--bec-text); border-color: var(--bec-border); }
+.bec-btn-outline:hover { border-color: var(--bec-brand); color: var(--bec-brand); }
+.bec-btn[disabled], .bec-btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    filter: grayscale(0.35);
+}
+
+/* ── Score stats — the shared 4-cell segmented panel (quiz family) ── */
+.bec-stats {
+    width: min(var(--bec-w-standard), 100%);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    background: var(--bec-surface);
+    border: 1px solid var(--bec-border);
+    border-radius: 1rem;
+    box-shadow: 0 10px 26px -16px rgba(15, 23, 42, 0.28);
+    padding: clamp(0.55rem, 1.5vh, 0.8rem) clamp(0.5rem, 1.4vw, 0.9rem);
+}
+.bec-stats--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bec-stat-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.5rem, 1.4vw, 0.75rem);
+    padding: 0.15rem 0.3rem;
+    min-width: 0;
+}
+.bec-stat-cell + .bec-stat-cell { border-left: 1px solid var(--bec-border); }
+.bec-stat-cell.is-good .bec-stat-value { color: var(--bec-good); }
+.bec-stat-cell.is-bad .bec-stat-value { color: var(--bec-bad); }
+.bec-stat-ico {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(1.7rem, 4.2vh, 2.2rem);
+    height: clamp(1.7rem, 4.2vh, 2.2rem);
+    border-radius: 9999px;
+}
+.bec-stat-ico.is-good { background: var(--bec-good-soft); color: var(--bec-good); }
+.bec-stat-ico.is-bad { background: var(--bec-bad-soft); color: var(--bec-bad); }
+.bec-stat-ico.is-time { background: var(--bec-brand-soft); color: var(--bec-brand); }
+.bec-stat-ico svg { display: block; }
+
+/* Legacy pill statbar (kept for compatibility) */
+.bec-statbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; }
+.bec-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: var(--bec-surface);
+    border: 1px solid var(--bec-border);
+    border-radius: 9999px;
+    padding: 0.38rem 1.05rem;
+    box-shadow: 0 4px 12px -8px rgba(15, 23, 42, 0.25);
+}
+.bec-stat-label { font-size: var(--bec-stat-label-size); font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--bec-text-2); }
+.bec-stat-value { font-size: var(--bec-stat-value-size); font-weight: 900; color: var(--bec-text); font-variant-numeric: tabular-nums; }
+.bec-stat.is-good .bec-stat-value { color: var(--bec-good); }
+.bec-stat.is-bad .bec-stat-value { color: var(--bec-bad); }
+
+/* ── Quiz container internals ───────────────────────────────────── */
+.bec-quiz {
+    width: min(var(--bec-w-standard), 100%);
+    display: flex;
+    flex-direction: column;
+    padding: clamp(0.9rem, 2.4vh, 1.6rem);
+    gap: clamp(0.6rem, 1.8vh, 1.05rem);
+}
+.bec-quiz--wide { width: min(var(--bec-w-quiz), 92%); }
+.bec-quiz-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.bec-quiz-instruction { font-size: var(--bec-instruction-size); font-weight: 800; color: var(--bec-text); }
+.bec-qcount {
+    font-size: clamp(0.68rem, 1.5vh, 0.84rem);
+    font-weight: 800;
+    color: var(--bec-text-2);
+    background: var(--bec-bg);
+    border: 1px solid var(--bec-border);
+    border-radius: 9999px;
+    padding: 0.28rem 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.bec-progress { height: 0.5rem; border-radius: 9999px; background: #e9ebf7; overflow: hidden; }
+.dark .bec-progress { background: var(--bec-border); }
+.bec-progress-fill { height: 100%; width: 0%; border-radius: 9999px; background: linear-gradient(90deg, #4f46e5, #3b82f6); transition: width 0.35s ease; }
+
+.bec-question {
+    font-size: var(--bec-question-size);
+    font-weight: 800;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    text-align: center;
+}
+
+.bec-answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: clamp(0.6rem, 1.8vh, 0.95rem); }
+.bec-ans {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: clamp(2.9rem, 7.2vh, 4.1rem);
+    padding: 0.6rem 1.2rem;
+    border-radius: 1rem;
+    border: 1.5px solid var(--bec-border);
+    background: var(--bec-surface);
+    color: var(--bec-text);
+    font-size: var(--bec-ans-size);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.bec-ans:hover { border-color: var(--bec-brand); color: var(--bec-brand); }
+.bec-ans.is-selected { background: var(--bec-brand-soft); border-color: var(--bec-brand); color: var(--bec-brand); font-weight: 800; box-shadow: 0 8px 16px -8px rgba(79, 70, 229, 0.5); }
+.bec-ans.is-correct { background: var(--bec-good-soft); border-color: var(--bec-good); color: var(--bec-good); }
+.bec-ans.is-wrong { background: var(--bec-bad-soft); border-color: var(--bec-bad); color: var(--bec-bad); }
+.bec-ans[disabled], .bec-ans.is-locked { pointer-events: none; }
+
+.bec-feedback { min-height: 1.3rem; text-align: center; font-size: clamp(0.72rem, 1.7vh, 0.95rem); font-weight: 800; }
+.bec-feedback.is-good { color: var(--bec-good); }
+.bec-feedback.is-bad { color: var(--bec-bad); }
+.bec-feedback.is-info { color: var(--bec-text-2); }
+
+.bec-quiznav { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(0.5rem, 1.4vw, 0.9rem); }
+.bec-quiznav .bec-btn { min-width: clamp(8rem, 13vw, 10.5rem); }
+
+/* ── Audio player row (prepared, disabled until a source is set) ── */
+.bec-audio { display: flex; align-items: center; gap: 0.7rem; background: var(--bec-bg); border: 1px solid var(--bec-border); border-radius: 1rem; padding: 0.55rem 0.85rem; }
+.bec-play {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(2.1rem, 4.8vh, 2.7rem);
+    height: clamp(2.1rem, 4.8vh, 2.7rem);
+    border-radius: 9999px;
+    background: var(--bec-brand-soft);
+    color: var(--bec-brand);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+.bec-play:hover { background: var(--bec-brand); color: #fff; }
+.bec-play:active { transform: scale(0.94); }
+.bec-play[disabled], .bec-audio.is-disabled .bec-play { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.bec-track { flex: 1 1 auto; height: 0.4rem; border-radius: 9999px; background: var(--bec-border); overflow: hidden; }
+.bec-track-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4f46e5, #3b82f6); border-radius: 9999px; transition: width 0.25s linear; }
+.bec-time { font-size: clamp(0.62rem, 1.3vh, 0.75rem); font-weight: 800; color: var(--bec-text-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ── Objectives ─────────────────────────────────────────────────── */
+.bec-obj-list { display: flex; flex-direction: column; gap: clamp(0.55rem, 1.6vh, 1rem); width: min(760px, 100%); }
+.bec-obj { display: flex; align-items: flex-start; gap: 0.9rem; padding: clamp(0.7rem, 2vh, 1.15rem) clamp(0.9rem, 2.4vh, 1.35rem); }
+.bec-obj-num {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(1.9rem, 4.4vh, 2.5rem);
+    height: clamp(1.9rem, 4.4vh, 2.5rem);
+    border-radius: 9999px;
+    background: var(--bec-brand);
+    color: #fff;
+    font-weight: 900;
+    font-size: clamp(0.8rem, 1.8vh, 1.05rem);
+    box-shadow: 0 8px 16px -8px rgba(79, 70, 229, 0.6);
+}
+.bec-obj-title { font-size: clamp(0.85rem, 2vh, 1.1rem); font-weight: 900; letter-spacing: -0.01em; }
+.bec-obj-text { margin-top: 0.2rem; font-size: clamp(0.68rem, 1.5vh, 0.85rem); font-weight: 500; line-height: 1.5; color: var(--bec-text-2); }
+
+/* ── Phrase rows (language focus) ───────────────────────────────── */
+.bec-phrase-list { display: flex; flex-direction: column; gap: clamp(0.45rem, 1.4vh, 0.8rem); width: min(720px, 100%); }
+.bec-phrase-row { display: flex; align-items: center; gap: 0.85rem; padding: clamp(0.55rem, 1.7vh, 0.95rem) clamp(0.8rem, 2vh, 1.2rem); }
+.bec-speak {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(2rem, 4.6vh, 2.55rem);
+    height: clamp(2rem, 4.6vh, 2.55rem);
+    border-radius: 9999px;
+    background: var(--bec-brand-soft);
+    color: var(--bec-brand);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bec-speak:hover { background: var(--bec-brand); color: #fff; }
+.bec-speak[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.bec-phrase-text { font-size: clamp(0.95rem, 2.3vh, 1.3rem); font-weight: 700; }
+
+/* ── Vocabulary cards (image top, word, meaning, example) ───────── */
+.bec-vocab-wrap { position: relative; width: min(880px, 100%); display: flex; align-items: center; gap: 0.4rem; }
+.bec-vocab-grid { flex: 1 1 auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(0.5rem, 1.5vw, 0.9rem); min-width: 0; }
+.bec-vocab {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 1rem;
+    border: 1px solid var(--bec-border);
+    background: var(--bec-surface);
+    box-shadow: 0 8px 20px -12px rgba(15, 23, 42, 0.18);
+}
+.bec-vocab-img {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--bec-brand-soft);
+    border-bottom: 1px solid var(--bec-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bec-brand);
+    opacity: 0.85;
+}
+.bec-vocab-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.bec-vocab-body { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.5rem 0.7rem 0.6rem; min-width: 0; }
+.bec-vocab-word { font-size: clamp(0.72rem, 1.55vh, 0.9rem); font-weight: 900; letter-spacing: -0.01em; }
+.bec-vocab-meaning { font-size: clamp(0.6rem, 1.3vh, 0.74rem); font-weight: 600; color: var(--bec-text-2); line-height: 1.35; }
+.bec-vocab-example { font-size: clamp(0.58rem, 1.25vh, 0.72rem); font-weight: 600; font-style: italic; color: var(--bec-brand); line-height: 1.35; }
+.bec-vocab-audio {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: none;
+    background: transparent;
+    color: var(--bec-brand);
+    font-size: clamp(0.58rem, 1.2vh, 0.7rem);
+    font-weight: 800;
+    cursor: pointer;
+    padding: 0.15rem 0;
+}
+.bec-vocab-audio[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.bec-pager-arrow {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(1.9rem, 4.2vh, 2.4rem);
+    height: clamp(1.9rem, 4.2vh, 2.4rem);
+    border-radius: 9999px;
+    border: 1px solid var(--bec-border);
+    background: var(--bec-surface);
+    color: var(--bec-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bec-pager-arrow:hover { border-color: var(--bec-brand); color: var(--bec-brand); }
+.bec-pager-arrow[disabled] { opacity: 0.35; pointer-events: none; }
+.bec-pager-count { font-size: clamp(0.62rem, 1.3vh, 0.75rem); font-weight: 900; color: var(--bec-text-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ── Video player (empty, controls disabled until a source exists) */
+.bec-video-card {
+    position: relative;
+    width: min(860px, 100%);
+    aspect-ratio: 16 / 9;
+    max-height: 100%;
+    border-radius: 1.4rem;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--bec-border);
+    box-shadow: 0 18px 45px -20px rgba(2, 6, 23, 0.5);
+}
+.bec-video-card video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+.bec-video-empty {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.bec-video-empty span {
+    font-size: clamp(0.6rem, 1.3vh, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(148, 163, 184, 0.55);
+}
+.bec-video-controls {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.8rem;
+    background: linear-gradient(to top, rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.35) 70%, transparent);
+    opacity: 0.55;
+}
+.bec-video-controls .bec-vc-btn { background: none; border: none; color: #e2e8f0; cursor: default; display: inline-flex; padding: 0.2rem; }
+.bec-video-controls .bec-vc-track { flex: 1; height: 0.3rem; border-radius: 9999px; background: rgba(226, 232, 240, 0.3); overflow: hidden; }
+.bec-video-controls .bec-vc-fill { height: 100%; width: 0%; background: #6366f1; border-radius: 9999px; }
+.bec-video-controls .bec-vc-time { color: #cbd5e1; font-size: 0.62rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.bec-video-controls.is-live { opacity: 1; }
+.bec-video-controls.is-live .bec-vc-btn { cursor: pointer; }
+
+/* ── Reading document & question lines ──────────────────────────── */
+.bec-doc { padding: clamp(0.8rem, 2.2vh, 1.3rem); }
+.bec-doc-head { display: flex; align-items: center; gap: 0.6rem; border-bottom: 2px solid var(--bec-text); padding-bottom: 0.5rem; }
+.bec-doc-title { font-size: clamp(0.8rem, 1.8vh, 1.05rem); font-weight: 900; text-transform: uppercase; letter-spacing: 0.01em; }
+.bec-doc-row { display: flex; justify-content: space-between; gap: 1rem; font-size: clamp(0.62rem, 1.4vh, 0.8rem); font-weight: 600; color: var(--bec-text-2); padding: 0.22rem 0; }
+.bec-doc-row strong { color: var(--bec-text); font-weight: 800; font-variant-numeric: tabular-nums; }
+.bec-doc-total { display: flex; justify-content: space-between; align-items: center; background: var(--bec-brand); color: #fff; border-radius: 0.7rem; padding: 0.45rem 0.8rem; margin-top: 0.5rem; }
+.bec-qrow { display: flex; align-items: flex-start; gap: 0.6rem; }
+.bec-qrow-num {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.45rem; height: 1.45rem;
+    border-radius: 0.5rem;
+    background: var(--bec-brand-soft);
+    color: var(--bec-brand);
+    font-size: 0.66rem; font-weight: 900;
+}
+.bec-qrow-text { font-size: clamp(0.7rem, 1.55vh, 0.85rem); font-weight: 700; line-height: 1.4; }
+.bec-ansline { flex: 1; border-bottom: 2px dashed var(--bec-border); min-height: 1.15rem; }
+
+/* ── Word bank chips & blanks ───────────────────────────────────── */
+.bec-bank { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.45rem; }
+.bec-chip {
+    border: 1.5px solid var(--bec-brand-soft);
+    background: var(--bec-brand-soft);
+    color: var(--bec-brand);
+    border-radius: 9999px;
+    padding: clamp(0.4rem, 1.1vh, 0.55rem) clamp(0.9rem, 2.2vw, 1.2rem);
+    font-size: clamp(0.7rem, 1.7vh, 0.92rem);
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bec-chip:hover { background: var(--bec-brand); color: #fff; }
+.bec-chip.is-selected { background: var(--bec-brand); color: #fff; box-shadow: 0 8px 16px -8px rgba(79, 70, 229, 0.6); }
+.bec-chip.is-used { opacity: 0.35; pointer-events: none; text-decoration: line-through; }
+.bec-blank {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    min-width: clamp(4.5rem, 10vw, 6.5rem);
+    margin: 0 0.2rem;
+    padding: 0 0.4rem;
+    border-bottom: 2.5px dashed var(--bec-brand-glow);
+    background: transparent;
+    border-top-left-radius: 0.4rem;
+    border-top-right-radius: 0.4rem;
+    font-weight: 800;
+    font-style: italic;
+    color: var(--bec-brand);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bec-blank:hover { background: var(--bec-brand-soft); }
+.bec-blank .n { font-size: 0.68em; font-weight: 900; opacity: 0.65; margin-right: 0.3rem; }
+.bec-blank.is-filled { border-bottom-style: solid; background: var(--bec-brand-soft); }
+.bec-blank.is-correct { border-bottom-color: var(--bec-good); color: var(--bec-good); background: var(--bec-good-soft); }
+.bec-blank.is-wrong { border-bottom-color: var(--bec-bad); color: var(--bec-bad); background: var(--bec-bad-soft); }
+
+/* ── Overlay / modal (script viewer) ────────────────────────────── */
+.bec-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.bec-overlay.is-open { opacity: 1; pointer-events: auto; }
+.bec-modal {
+    width: min(560px, 100%);
+    max-height: min(78dvh, 560px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(14px) scale(0.97);
+    transition: transform 0.3s ease;
+}
+.bec-overlay.is-open .bec-modal { transform: translateY(0) scale(1); }
+.bec-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--bec-border); }
+.bec-modal-title { font-size: clamp(0.8rem, 1.7vh, 1rem); font-weight: 900; }
+.bec-modal-close {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.9rem; height: 1.9rem;
+    border-radius: 9999px;
+    border: 1px solid var(--bec-border);
+    background: var(--bec-surface);
+    color: var(--bec-text-2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bec-modal-close:hover { border-color: var(--bec-bad); color: var(--bec-bad); }
+.bec-modal-body { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 0.9rem 1.1rem; gap: 0.5rem; }
+.bec-modal-nav { display: flex; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.6rem 1rem 0.8rem; }
+.bec-script-line { font-size: clamp(0.7rem, 1.55vh, 0.88rem); font-weight: 500; line-height: 1.5; color: var(--bec-text); }
+.bec-script-line .sp { font-weight: 900; color: var(--bec-brand); }
+.bec-script-num { display: inline-flex; align-items: center; justify-content: center; min-width: 1.3rem; height: 1.3rem; border-radius: 0.45rem; background: var(--bec-brand-soft); color: var(--bec-brand); font-size: 0.62rem; font-weight: 900; margin-right: 0.45rem; }
+
+/* ── Dialogue (At the Bank) ─────────────────────────────────────── */
+.bec-dlg { display: flex; flex-direction: column; gap: clamp(0.3rem, 1vh, 0.55rem); }
+.bec-dlg-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: clamp(0.35rem, 1.1vh, 0.6rem) clamp(0.6rem, 1.6vh, 0.9rem);
+    border-radius: 0.9rem;
+    border: 1px solid var(--bec-border);
+    background: var(--bec-surface);
+    font-size: clamp(0.64rem, 1.4vh, 0.82rem);
+    line-height: 1.45;
+}
+.bec-dlg-line .sp { flex: 0 0 auto; font-weight: 900; font-size: 0.92em; }
+.bec-dlg-line.s-employee .sp { color: var(--bec-brand); }
+.bec-dlg-line.s-customer .sp { color: var(--bec-text-2); }
+.bec-dlg-line.is-key { border-color: var(--bec-brand-glow); background: var(--bec-brand-soft); }
+.bec-dlg-line.is-hidden { display: none; }
+
+/* ── Image placeholder (consistent pattern for missing media) ───── */
+.bec-imgslot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    border: 2px dashed var(--bec-brand-glow);
+    border-radius: 1rem;
+    background: var(--bec-brand-soft);
+    color: var(--bec-brand);
+    text-align: center;
+    padding: 0.6rem;
+}
+.bec-imgslot .t1 { font-size: clamp(0.55rem, 1.1vh, 0.65rem); font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.75; }
+.bec-imgslot .t2 { font-size: clamp(0.55rem, 1.1vh, 0.68rem); font-weight: 700; color: var(--bec-text-2); }
+
+/* ── Reduced motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .bec-slide *, .bec-slide *::before, .bec-slide *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE / NARROW-STAGE REFLOW SYSTEM
+   The reader renders slides at their natural stage width on stages up
+   to 860px wide (phones and portrait tablets), so these viewport media
+   queries finally match inside the reader iframe too. Slides keep the
+   fixed 1280×720 scaled canvas on wider desktop stages, where none of
+   this applies — the desktop design is untouched.
+
+   Principles: real responsive layout (never a shrunken desktop slide),
+   readable typography, full-width cards, top-aligned content, stacked
+   columns, 44px-class touch targets, vertical growth instead of
+   shrinking. The reader's stage element owns scrolling.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+    /* Let the page grow past one screen: content is never squeezed to fit.
+       Horizontal overflow is clipped hard — no element (glow offsets,
+       negative margins, subpixel rounding) may ever create side-scroll. */
+    html.h-full, body.h-full { height: auto; min-height: 100%; }
+    body.overflow-hidden { overflow: visible; }
+    html, body { overflow-x: hidden; overflow-x: clip; }
+
+    .bec-slide {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+
+        /* Fixed readable phone type scale — no vh units, so sizes stay
+           stable while the canvas grows to its natural content height. */
+        --bec-title-size: clamp(1.55rem, 7.5vw, 2rem);      /* 25–32px  */
+        --bec-sub-size: 0.95rem;                            /* 15.2px   */
+        --bec-kicker-size: 0.62rem;
+        --bec-instruction-size: 0.9rem;
+        --bec-question-size: clamp(1.15rem, 5vw, 1.4rem);   /* 18–22px  */
+        --bec-ans-size: 0.98rem;                            /* ~15.7px  */
+        --bec-btn-size: 0.9rem;
+        --bec-body-size: 0.95rem;
+        --bec-stat-label-size: 0.62rem;
+        --bec-stat-value-size: 1.15rem;
+    }
+
+    /* Activity content starts near the top under the reader header. */
+    .bec-stage {
+        justify-content: flex-start;
+        padding: 22px 16px 30px;
+        gap: 0.9rem;
+    }
+
+    /* Cards: full available width, comfortable padding. */
+    .bec-quiz, .bec-quiz--wide { width: 100%; }
+    .bec-quiz { padding: 1.05rem 0.95rem; gap: 0.8rem; }
+    .bec-quiz-top { gap: 0.5rem; }
+    .bec-qcount { font-size: 0.72rem; padding: 0.3rem 0.75rem; }
+
+    /* One answer per row — full-width stacked options. */
+    .bec-answers { grid-template-columns: minmax(0, 1fr); gap: 0.6rem; }
+    .bec-ans { min-height: 3rem; padding: 0.7rem 1rem; white-space: normal; }
+
+    .bec-question { line-height: 1.3; }
+    .bec-feedback { font-size: 0.85rem; }
+
+    /* Touch-friendly controls; nav buttons share the row(s) evenly. */
+    .bec-btn { min-height: 2.75rem; padding: 0.6rem 1.2rem; white-space: normal; }
+    .bec-quiznav { gap: 0.6rem; }
+    .bec-quiznav .bec-btn { min-width: 0; flex: 1 1 calc(50% - 0.6rem); }
+
+    /* Four-metric score panels become a compact 2×2 grid (3-metric
+       panels keep one row — they fit at phone widths). */
+    .bec-stats:not(.bec-stats--3) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        row-gap: 0.55rem;
+    }
+    .bec-stats:not(.bec-stats--3) .bec-stat-cell + .bec-stat-cell { border-left: none; }
+    .bec-stats:not(.bec-stats--3) .bec-stat-cell:nth-child(even) { border-left: 1px solid var(--bec-border); }
+    .bec-stats:not(.bec-stats--3) .bec-stat-cell:nth-child(n+3) { border-top: 1px solid var(--bec-border); padding-top: 0.55rem; }
+
+    /* Objectives: full-width readable cards. */
+    .bec-obj-list { width: 100%; }
+    .bec-obj { padding: 0.95rem 1.05rem; gap: 0.8rem; }
+    .bec-obj-num { width: 2.3rem; height: 2.3rem; font-size: 0.95rem; }
+    .bec-obj-title { font-size: 1.02rem; }
+    .bec-obj-text { font-size: 0.92rem; }
+
+    /* Phrases / dialogue / reading: readable body sizes. */
+    .bec-phrase-list { width: 100%; }
+    .bec-phrase-text { font-size: 1.02rem; }
+    .bec-speak { width: 2.5rem; height: 2.5rem; }
+    .bec-dlg-line { font-size: 0.92rem; padding: 0.5rem 0.75rem; }
+    .bec-doc-row { font-size: 0.85rem; }
+    .bec-doc-title { font-size: 1rem; }
+
+    /* Video fills the available width at 16:9. */
+    .bec-video-card { width: 100%; }
+
+    /* Script / dialog modals use the full phone width. */
+    .bec-overlay { padding: 0.75rem; }
+    .bec-modal { width: 100%; max-height: 86dvh; }
+    .bec-modal-body { padding: 0.8rem 0.95rem; }
+    .bec-script-line { font-size: 0.9rem; }
+}
